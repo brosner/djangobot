@@ -87,9 +87,8 @@ class TracTicketBot(irc.IRCClient):
 class IRCFactory(protocol.ClientFactory):
     protocol = TracTicketBot
     
-    def __init__(self, channel, filename):
+    def __init__(self, channel):
         self.channel = channel
-        self.filename = filename
     
     def clientConnectionLost(self, connector, reason):
         """
@@ -105,7 +104,7 @@ class IRCFactory(protocol.ClientFactory):
 
 def main():
     log.startLogging(sys.stdout)
-    f = IRCFactory("djangocasts", None)
+    f = IRCFactory(sys.argv[1])
     reactor.connectTCP("irc.freenode.net", 6667, f)
     reactor.run()
 
