@@ -25,7 +25,7 @@ class TracTicketBot(irc.IRCClient):
     An IRC bot that logs each message in an given channel.
     """
     
-    nickname = "django_bot"
+    nickname = "DjangoBot"
     
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
