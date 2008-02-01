@@ -65,13 +65,13 @@ class TracTicketBot(irc.IRCClient):
             self.msg(channel, "%s: i am a bot. brosner is my creator." % user)
         # find any referenced tickets in this message
         # this requires the syntax #1000 to trigger.
-        tickets = re.findall(r".?\#(\d+)", message)
+        tickets = re.findall(r"(?:^|[\s(])#(\d+)\b", message)
         for ticket in tickets:
             url = "http://code.djangoproject.com/ticket/%s" % ticket
             if self.get_url(url):
                 self.msg(channel, url)
         # find changesets. requires r1000 syntax.
-        changesets = re.findall(r".?r(\d+)", message)
+        changesets = re.findall(r"\br(\d+)\b", message)
         for changeset in changesets:
             url = "http://code.djangoproject.com/changeset/%s" % changeset
             if self.get_url(url):
