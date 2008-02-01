@@ -48,16 +48,14 @@ class TracTicketBot(irc.IRCClient):
     def privmsg(self, user, channel, message):
         user = user.split("!", 1)[0]
         if channel == self.nickname:
-            m = re.match(r"who is (.*)", message)
-            if m:
+            cmd, params = message.split(" ", 1)
+            if cmd == "who":
                 try:
-                    u = urllib2.urlopen("http://djangopeople.net/api/irc_lookup/%s/" % m.group(1))
+                    u = urllib2.urlopen("http://djangopeople.net/api/irc_lookup/%s/" % params)
                 except http.HTTPError:
                     self.msg(user, "something went wrong!")
                 else:
                     self.msg(user, u.read())
-            else:
-                self.msg(user, "i don't understand you.")
             return
         if message.startswith(self.nickname + ":"):
             self.msg(channel, "%s: i am a bot. brosner is my creator." % user)
