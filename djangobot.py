@@ -48,7 +48,11 @@ class TracTicketBot(irc.IRCClient):
     def privmsg(self, user, channel, message):
         user = user.split("!", 1)[0]
         if channel == self.nickname:
-            cmd, params = message.split(" ", 1)
+            try:
+                cmd, params = message.split(" ", 1)
+            except ValueError:
+                # no params
+                cmd = message
             if cmd == "who":
                 try:
                     u = urllib2.urlopen("http://djangopeople.net/api/irc_lookup/%s/" % params.strip())
