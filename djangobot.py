@@ -51,7 +51,7 @@ class TracTicketBot(irc.IRCClient):
             cmd, params = message.split(" ", 1)
             if cmd == "who":
                 try:
-                    u = urllib2.urlopen("http://djangopeople.net/api/irc_lookup/%s/" % params)
+                    u = urllib2.urlopen("http://djangopeople.net/api/irc_lookup/%s/" % params.strip())
                 except http.HTTPError:
                     self.msg(user, "something went wrong!")
                 else:
