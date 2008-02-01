@@ -107,7 +107,7 @@ class IRCFactory(protocol.ClientFactory):
         reactor.stop()
 
 def main():
-    log.startLogging(sys.stdout)
+    log.startLogging(open("/home/djangobot/djangobot.log"))
     f = IRCFactory(sys.argv[1])
     reactor.connectTCP("irc.freenode.net", 6667, f)
     reactor.run()
