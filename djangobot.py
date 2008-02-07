@@ -1,10 +1,17 @@
 
 import re
+import time
 import urllib2
+import Queue
+
+import feedparser
 
 from twisted.words.protocols import irc
 from twisted.application import internet, service
-from twisted.internet import protocol, reactor, defer
+from twisted.internet import protocol, reactor, task
+
+queue = Queue.Queue()
+signed_on = False
 
 class DjangoBotProtocol(irc.IRCClient):
     def connectionMade(self):
@@ -12,11 +19,27 @@ class DjangoBotProtocol(irc.IRCClient):
         self.password = self.factory.password
         irc.IRCClient.connectionMade(self)
     
+    def trac_updates(self, channel):
+        try:
+            # dont block here so the bot can continue to work.
+            entries = queue.get(block=False)
+        except Queue.Empty:
+            pass
+        else:
+            for entry in entries:
+                self.msg(channel, entry)
+    
     def signedOn(self):
         """
         Join the channel after sign on.
         """
         self.join(self.factory.channel)
+    
+    def joined(self, channel):
+        """
+        Once the bot has signed into the channel begin the trac updates.
+        """
+        task.LoopingCall(self.trac_updates, channel).start(15)
     
     def privmsg(self, user, channel, message):
         user = user.split("!", 1)[0]
@@ -72,7 +95,40 @@ class DjangoBotService(service.Service):
         return factory
 
 application = service.Application("djangobot")
+serv = service.MultiService()
+
 dbs = DjangoBotService("django", "DjangoBot")
 internet.TCPClient(
     "irc.freenode.org", 6667, dbs.getFactory(),
-).setServiceParent(service.IServiceCollection(application))
+).setServiceParent(serv)
+
+class TracFeedFetcher(object):
+    def __init__(self, feed_url):
+        self.feed_url = feed_url
+        self.seen_entries = {}
+    
+    def __call__(self):
+        self.fetch()
+    
+    def fetch(self):
+        feed = feedparser.parse(self.feed_url)
+        entries = []
+        for entry in feed.entries:
+            if entry.id not in self.seen_entries:
+                # Twisted won't let me write unicode objects to the socket, so
+                # here I need to encode the data in ascii replacing stuff that
+                # won't work. (TODO: look into this more). Note, that I am
+                # explicitly converting the data to a bytestring when adding
+                # to the entries list.
+                msg = "%s (%s)" % (entry.title.encode("ascii", "replace"), entry.link)
+                entries.append(str(msg))
+            self.seen_entries[entry.id] = True
+        queue.put(entries)
+
+# Keep this off until I get a configuration file working correctly.
+if False:
+    internet.TimerService(
+        30, TracFeedFetcher("http://code.djangoproject.com/timeline?ticket=on&changeset=on&max=10&daysback=1&format=rss")
+    ).setServiceParent(serv)
+
+serv.setServiceParent(application)
