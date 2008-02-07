@@ -26,7 +26,7 @@ class DjangoBotProtocol(irc.IRCClient):
         except Queue.Empty:
             pass
         else:
-            for entry in entries:
+            for entry in reversed(entries):
                 self.msg(channel, entry)
     
     def signedOn(self):
@@ -114,7 +114,7 @@ class TracFeedFetcher(object):
         self.seen_entries = {}
     
     def get_feed_url(self):
-        url = "%s/timeline/?format=rss&max=5&daysback=1"
+        url = "%s/timeline/?format=rss&max=50&daysback=1"
         if self.opts["ticket"]:
             url += "&ticket=on"
         if self.opts["changeset"]:
@@ -134,10 +134,12 @@ class TracFeedFetcher(object):
                 # won't work. (TODO: look into this more). Note, that I am
                 # explicitly converting the data to a bytestring when adding
                 # to the entries list.
-                msg = "%s (%s)" % (entry.title.encode("ascii", "replace"), entry.link)
+                msg = "%s (%s)" % (entry.title.encode("ascii", "replace"),
+                                   entry.link)
                 entries.append(str(msg))
             self.seen_entries[entry.id] = True
-        queue.put(entries)
+        # limit the list entries to no more than 5
+        queue.put(entries[:5])
 
 # Keep this off until I get a configuration file working correctly.
 if False:
