@@ -103,15 +103,29 @@ internet.TCPClient(
 ).setServiceParent(serv)
 
 class TracFeedFetcher(object):
-    def __init__(self, feed_url):
-        self.feed_url = feed_url
+    opts = {
+        "ticket": True,
+        "changeset": True,
+    }
+    
+    def __init__(self, trac_url, **options):
+        self.trac_url = trac_url
+        self.opts.update(options)
         self.seen_entries = {}
+    
+    def get_feed_url(self):
+        url = "%s/timeline/?format=rss&max=5&daysback=1"
+        if self.opts["ticket"]:
+            url += "&ticket=on"
+        if self.opts["changeset"]:
+            url += "&changeset=on"
+        return url % self.trac_url
     
     def __call__(self):
         self.fetch()
     
     def fetch(self):
-        feed = feedparser.parse(self.feed_url)
+        feed = feedparser.parse(self.get_feed_url())
         entries = []
         for entry in feed.entries:
             if entry.id not in self.seen_entries:
@@ -128,7 +142,7 @@ class TracFeedFetcher(object):
 # Keep this off until I get a configuration file working correctly.
 if False:
     internet.TimerService(
-        30, TracFeedFetcher("http://code.djangoproject.com/timeline?ticket=on&changeset=on&max=10&daysback=1&format=rss")
+        60, TracFeedFetcher("http://code.djangoproject.com")
     ).setServiceParent(serv)
 
 serv.setServiceParent(application)
