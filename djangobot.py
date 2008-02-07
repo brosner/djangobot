@@ -1,49 +1,22 @@
 
 import re
-import sys
-import time
 import urllib2
 
-from twisted.python import log
 from twisted.words.protocols import irc
-from twisted.internet import reactor, protocol
+from twisted.application import internet, service
+from twisted.internet import protocol, reactor, defer
 
-class MessageLogger(object):
-    def __init__(self, stream):
-        self.stream = stream
-    
-    def log(self, message):
-        ts = time.strftime("[%H:%M:%S]", time.localtime(time.time()))
-        self.stream.write("%s %s\n" % (ts, message))
-        self.stream.flush()
-    
-    def close(self):
-        self.stream.close()
-
-class TracTicketBot(irc.IRCClient):
-    """
-    An IRC bot that logs each message in an given channel.
-    """
-    
-    nickname = "DjangoBot"
-    
+class DjangoBotProtocol(irc.IRCClient):
     def connectionMade(self):
+        self.nickname = self.factory.nickname
+        self.password = self.factory.password
         irc.IRCClient.connectionMade(self)
-        self.logger = MessageLogger(sys.stdout)
-        self.logger.log("[connected at %s]" %
-                        time.asctime(time.localtime(time.time())))
-    
-    def connectionLost(self, reason):
-        irc.IRCClient.connectionLost(self, reason)
-        self.logger.log("[disconnected at %s]" %
-                        time.asctime(time.localtime(time.time())))
-        self.logger.close()
     
     def signedOn(self):
+        """
+        Join the channel after sign on.
+        """
         self.join(self.factory.channel)
-    
-    def joined(self, channel):
-        self.logger.log("[joined %s]" % channel)
     
     def privmsg(self, user, channel, message):
         user = user.split("!", 1)[0]
@@ -84,33 +57,21 @@ class TracTicketBot(irc.IRCClient):
             return False
         else:
             return True
-    
-    def action(self, user, channel, message):
-        pass
 
-class IRCFactory(protocol.ClientFactory):
-    protocol = TracTicketBot
-    
-    def __init__(self, channel):
+class DjangoBotService(service.Service):
+    def __init__(self, channel, nickname):
         self.channel = channel
+        self.nickname = nickname
     
-    def clientConnectionLost(self, connector, reason):
-        """
-        If we get disconnected, reconnect to server.
-        """
-        connector.connect()
-    
-    def clientConnectionFailed(self, connector, reason):
-        """
-        """
-        print "connection failed:", reason
-        reactor.stop()
+    def getFactory(self):
+        factory = protocol.ReconnectingClientFactory()
+        factory.protocol = DjangoBotProtocol
+        factory.channel = self.channel
+        factory.nickname, factory.password = self.nickname, self.password
+        return factory
 
-def main():
-    log.startLogging(open("/home/djangobot/djangobot.log"))
-    f = IRCFactory(sys.argv[1])
-    reactor.connectTCP("irc.freenode.net", 6667, f)
-    reactor.run()
-
-if __name__ == "__main__":
-    main()
+application = service.Application("djangobot")
+dbs = DjangoBotService("django", "DjangoBot")
+internet.TCPClient(
+    "irc.freenode.org", 6667, dbs.getFactory(),
+).setServiceParent(service.IServiceCollection(application))
