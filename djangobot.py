@@ -62,6 +62,7 @@ class DjangoBotService(service.Service):
     def __init__(self, channel, nickname):
         self.channel = channel
         self.nickname = nickname
+        self.password = None
     
     def getFactory(self):
         factory = protocol.ReconnectingClientFactory()
