@@ -13,6 +13,10 @@ from twisted.internet import protocol, reactor, task
 queue = Queue.Queue()
 signed_on = False
 
+class HTTPHeadRequest(urllib2.Request):
+    def get_method(self):
+        return "HEAD"
+
 class DjangoBotProtocol(irc.IRCClient):
     def connectionMade(self):
         self.nickname = self.factory.nickname
@@ -64,18 +68,18 @@ class DjangoBotProtocol(irc.IRCClient):
         tickets = re.findall(r"(?:^|[\s(])#(\d+)\b", message)
         for ticket in tickets:
             url = "http://code.djangoproject.com/ticket/%s" % ticket
-            if self.get_url(url):
+            if self.check_url(url):
                 self.msg(channel, url)
         # find changesets. requires r1000 syntax.
         changesets = re.findall(r"\br(\d+)\b", message)
         for changeset in changesets:
             url = "http://code.djangoproject.com/changeset/%s" % changeset
-            if self.get_url(url):
+            if self.check_url(url):
                 self.msg(channel, url)
     
-    def get_url(self, url):
+    def check_url(self, url):
         try:
-            urllib2.urlopen(url)
+            urllib2.urlopen(HTTPHeadRequest(url))
         except urllib2.HTTPError:
             return False
         else:
