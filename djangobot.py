@@ -4,6 +4,8 @@ import time
 import urllib2
 import Queue
 
+from ConfigParser import SafeConfigParser
+
 import feedparser
 
 from twisted.words.protocols import irc
@@ -86,10 +88,10 @@ class DjangoBotProtocol(irc.IRCClient):
             return True
 
 class DjangoBotService(service.Service):
-    def __init__(self, channel, nickname):
+    def __init__(self, channel, nickname, password):
         self.channel = channel
         self.nickname = nickname
-        self.password = None
+        self.password = password
     
     def getFactory(self):
         factory = protocol.ReconnectingClientFactory()
@@ -98,12 +100,18 @@ class DjangoBotService(service.Service):
         factory.nickname, factory.password = self.nickname, self.password
         return factory
 
+config = SafeConfigParser()
+config.read("djangobot.ini")
+
 application = service.Application("djangobot")
 serv = service.MultiService()
 
-dbs = DjangoBotService("django", "DjangoBot")
+dbs = DjangoBotService(
+    config.get("irc", "channel"),
+    config.get("irc", "nickname"),
+    config.get("irc", "password"))
 internet.TCPClient(
-    "irc.freenode.org", 6667, dbs.getFactory(),
+    config.get("irc", "server"), int(config.get("irc", "port")), dbs.getFactory(),
 ).setServiceParent(serv)
 
 class TracFeedFetcher(object):
