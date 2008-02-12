@@ -183,13 +183,9 @@ class TracFeedFetcher(object):
         for entry in feed.entries:
             if entry.id not in self.seen_entries:
                 # Twisted won't let me write unicode objects to the socket, so
-                # here I need to encode the data in ascii replacing stuff that
-                # won't work. (TODO: look into this more). Note, that I am
-                # explicitly converting the data to a bytestring when adding
-                # to the entries list.
-                msg = "%s (%s)" % (entry.title.encode("ascii", "replace"),
-                                   entry.link)
-                entries.append(str(msg))
+                # here I need to encode the data in UTF-8.
+                msg = "%s (%s)" % (entry.title, entry.link)
+                entries.append(msg.encode("UTF-8"))
             self.seen_entries[entry.id] = True
         # limit the list entries to no more than 5
         queue.put(entries[:5])
