@@ -44,7 +44,7 @@ class IRCMessage(object):
             return cmd_func
     
     def parse_as_normal(self):
-        if self.message.startswith(self.irc.nickname + ":"):
+        if self.message.lower().startswith(self.irc.nickname.lower() + ":"):
             self.irc.msg(self.channel, "%s: i am a bot. brosner is my creator. http://code.djangoproject.com/wiki/DjangoBot" % self.user)
         # find any referenced tickets in this message
         # this requires the syntax #1000 to trigger.
@@ -133,8 +133,7 @@ class DjangoBotProtocol(irc.IRCClient):
     def privmsg(self, user, channel, message):
         if self.in_channel:
             msg = IRCMessage(self, user, channel, message)
-            # TODO: make this a case-insenstive comparsion
-            if channel == self.nickname:
+            if channel.lower() == self.nickname.lower():
                 msg.parse_as_command()
             else:
                 msg.parse_as_normal()
