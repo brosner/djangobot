@@ -32,7 +32,7 @@ class IRCMessage(object):
         except ValueError:
             cmd, params = self.message, ()
         else:
-            params = params.split(" ")
+            params = [param for param in params.split(" ") if param]
         self.resolve_command(cmd)(*params)
     
     def resolve_command(self, cmd):
