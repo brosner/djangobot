@@ -45,7 +45,7 @@ class IRCMessage(object):
     
     def parse_as_normal(self):
         if self.message.startswith(self.irc.nickname + ":"):
-            self.irc.msg(self.channel, "%s: i am a bot. brosner is my creator." % self.user)
+            self.irc.msg(self.channel, "%s: i am a bot. brosner is my creator. http://code.djangoproject.com/wiki/DjangoBot" % self.user)
         # find any referenced tickets in this message
         # this requires the syntax #1000 to trigger.
         tickets = re.findall(r"(?:^|[\s(])#(\d+)\b", self.message)
