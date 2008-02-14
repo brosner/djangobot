@@ -39,7 +39,7 @@ class IRCMessage(object):
         try:
             cmd_func = getattr(self, "cmd_%s" % cmd)
         except AttributeError:
-            return self.unknown_cmd
+            return self.cmd_unknown
         else:
             return cmd_func
     
@@ -68,11 +68,22 @@ class IRCMessage(object):
         else:
             return True
     
-    def unknown_cmd(self, *params):
+    def cmd_unknown(self, *params):
         self.irc.msg(self.user, "unknown command")
+    cmd_unknown.usage = "is an unknown command."
     
-    def cmd_help(self, *params):
-        self.irc.msg(self.user, "available commands: who")
+    def cmd_help(self, *commands):
+        if not commands:
+            self.irc.msg(self.user, "available commands: who")
+        else:
+            for cmd in commands:
+                method = self.resolve_command(cmd)
+                if hasattr(method, "usage"):
+                    self.irc.msg(self.user, "%s %s" % (cmd, method.usage))
+                if hasattr(method, "help_text"):
+                    self.irc.msg(self.user, method.help_text)
+    cmd_help.usage = "[command ...]"
+    cmd_help.help_text = "Sends back help about the given command(s)."
     
     def cmd_who(self, *nicknames):
         for nickname in [n.strip() for n in nicknames]:
@@ -86,8 +97,8 @@ class IRCMessage(object):
                     self.irc.msg(self.user, "%s was not found." % nickname)
                 else:
                     self.irc.msg(self.user, "%s is %s" % (nickname, response))
-    cmd_who.usage = ""
-    cmd_who.help_text = ""
+    cmd_who.usage = "<nickname> [<nickname> ...]"
+    cmd_who.help_text = "Sends back the real name, location and URL for the nickname if the person is registered on djangopeople.net."
 
 class DjangoBotProtocol(irc.IRCClient):
     def connectionMade(self):
