@@ -279,6 +279,7 @@ class TracFeedFetcher(object):
         self.channels = channels
         self.opts.update(options)
         self.seen_entries = {}
+        self.first_flag = True
     
     def get_feed_url(self):
         url = "%s/timeline/?format=rss&max=50&daysback=1"
@@ -313,6 +314,9 @@ class TracFeedFetcher(object):
                 msg = "%s (%s)" % (entry.title, entry.link)
                 entries.append(msg.encode("UTF-8"))
             self.seen_entries[entry.id] = True
+        if self.first_flag:
+            self.first_flag = False
+            return
         for channel in self.channels:
             # limit the list entries to no more than 5
             channel.queue.put(entries[:5])
@@ -328,11 +332,9 @@ class TracMonitorService(service.Service):
     def stopService(self):
         self.fetcher.stop()
         service.Service.stopService(self)
-    
-# Keep this off until I get a configuration file working correctly.
-if False:
-    TracMonitorService(
-        "http://code.djangoproject.com", 60, channels
-    ).setServiceParent(serv)
+        
+TracMonitorService(
+    "http://code.djangoproject.com", 60, channels
+).setServiceParent(serv)
 
 serv.setServiceParent(application)
