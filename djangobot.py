@@ -174,6 +174,10 @@ class Message(object):
     cmd_who.help_text = "Sends back the real name, location and URL for the nickname if the person is registered on djangopeople.net."
 
 class DjangoBotProtocol(irc.IRCClient):
+    
+    # wait two seconds between sending messages to channels and users.
+    lineRate = 2
+    
     def connectionMade(self):
         self.nickname = self.factory.nickname
         self.password = self.factory.password
@@ -188,8 +192,6 @@ class DjangoBotProtocol(irc.IRCClient):
         else:
             for entry in reversed(entries):
                 channel.msg(entry)
-                # wait a couple seconds before sending the next message
-                time.sleep(2)
     
     def signedOn(self):
         """
