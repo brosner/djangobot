@@ -19,10 +19,81 @@ class HTTPHeadRequest(urllib2.Request):
     def get_method(self):
         return "HEAD"
 
-class IRCMessage(object):
-    def __init__(self, irc, user, channel, message):
-        self.irc = irc
-        self.user = user.split("!", 1)[0]
+class User(object):
+    """
+    A single IRC user.
+    """
+    def __init__(self, nickname):
+        self.nickname = nickname
+    
+    def msg(self, message):
+        """
+        Sends a message to the user.
+        """
+        self.protocol.msg(self.nickname, message)
+
+class ChannelPool(object):
+    """
+    A collection of IRC channels.
+    """
+    def __init__(self, channels=None):
+        self.channels = {}
+        if channels is not None:
+            for channel in channels:
+                self.add(channel)
+    
+    def __iter__(self):
+        for channel in self.channels.values():
+            yield channel
+    
+    def __getitem__(self, channel):
+        return self.channels[channel]
+    
+    def add(self, channel):
+        # perform a quick optimization to speed up lookups
+        self.channels[channel.name] = channel
+    
+    def _all_joined(self):
+        """
+        Returns True if all channels in the pool have been joined. Otherwise,
+        return False.
+        """
+        for channel in self.channels.values():
+            if not channel.joined:
+                return False
+        return True
+    all_joined = property(_all_joined)
+    
+    def msg(self, message):
+        """
+        Sends a message to all the channels in the pool.
+        """
+        for channel in self:
+            channel.msg(message)
+
+class Channel(object):
+    """
+    A single IRC channel.
+    """
+    def __init__(self, name, nickname, joined=False):
+        self.name = name
+        self.nickname = nickname
+        self.joined = joined
+        self.users = {}
+    
+    def msg(self, message):
+        self.protocol.msg(self.name, message)
+    
+    def add_user(self, user):
+        user.protocol = self.protocol
+        self.users[user.nickname] = user
+
+class Message(object):
+    """
+    A single IRC message sent from a channel
+    """
+    def __init__(self, user, channel, message):
+        self.user = user
         self.channel = channel
         self.message = message
     
@@ -44,21 +115,22 @@ class IRCMessage(object):
             return cmd_func
     
     def parse_as_normal(self):
-        if self.message.lower().startswith(self.irc.nickname.lower() + ":"):
-            self.irc.msg(self.channel, "%s: i am a bot. brosner is my creator. http://code.djangoproject.com/wiki/DjangoBot" % self.user)
+        if self.message.lower().startswith(self.channel.nickname.lower() + ":"):
+            self.channel.msg("%s: i am a bot. brosner is my creator. " \
+                "http://code.djangoproject.com/wiki/DjangoBot" % self.user)
         # find any referenced tickets in this message
         # this requires the syntax #1000 to trigger.
         tickets = re.findall(r"(?:^|[\s(])#(\d+)\b", self.message)
         for ticket in tickets:
             url = "http://code.djangoproject.com/ticket/%s" % ticket
             if self.check_url(url):
-                self.irc.msg(self.channel, url)
+                self.channel.msg(url)
         # find changesets. requires r1000 syntax.
         changesets = re.findall(r"\br(\d+)\b", self.message)
         for changeset in changesets:
             url = "http://code.djangoproject.com/changeset/%s" % changeset
             if self.check_url(url):
-                self.irc.msg(self.channel, url)
+                self.channel.msg(url)
     
     def check_url(self, url):
         try:
@@ -69,19 +141,19 @@ class IRCMessage(object):
             return True
     
     def cmd_unknown(self, *params):
-        self.irc.msg(self.user, "unknown command")
+        self.user.msg("unknown command")
     cmd_unknown.usage = "is an unknown command."
     
     def cmd_help(self, *commands):
         if not commands:
-            self.irc.msg(self.user, "available commands: who")
+            self.user.msg("available commands: who")
         else:
             for cmd in commands:
                 method = self.resolve_command(cmd)
                 if hasattr(method, "usage"):
-                    self.irc.msg(self.user, "%s %s" % (cmd, method.usage))
+                    self.user.msg("%s %s" % (cmd, method.usage))
                 if hasattr(method, "help_text"):
-                    self.irc.msg(self.user, method.help_text)
+                    self.user.msg(method.help_text)
     cmd_help.usage = "[command ...]"
     cmd_help.help_text = "Sends back help about the given command(s)."
     
@@ -94,15 +166,14 @@ class IRCMessage(object):
             else:
                 response = u.read()
                 if response == "no match":
-                    self.irc.msg(self.user, "%s was not found." % nickname)
+                    self.user.msg("%s was not found." % nickname)
                 else:
-                    self.irc.msg(self.user, "%s is %s" % (nickname, response))
+                    self.user.msg("%s is %s" % (nickname, response))
     cmd_who.usage = "<nickname> [<nickname> ...]"
     cmd_who.help_text = "Sends back the real name, location and URL for the nickname if the person is registered on djangopeople.net."
 
 class DjangoBotProtocol(irc.IRCClient):
     def connectionMade(self):
-        self.in_channel = False
         self.nickname = self.factory.nickname
         self.password = self.factory.password
         irc.IRCClient.connectionMade(self)
@@ -121,34 +192,53 @@ class DjangoBotProtocol(irc.IRCClient):
         """
         Join the channel after sign on.
         """
-        self.join(self.factory.channel)
+        for channel in self.factory.channels:
+            # this seems a bit hackish. look into this later when it comes to
+            # mulitple nicknames. it probably needs to be escalated to a higher
+            # level and multiple threads for each nick.
+            channel.protocol = self
+            # don't join the nickname channel
+            if channel.name == self.nickname:
+                continue
+            self.join(channel.name)
     
     def joined(self, channel):
         """
         Once the bot has signed into the channel begin the trac updates.
         """
-        self.in_channel = True
+        self.factory.channels[channel].joined = True
         task.LoopingCall(self.trac_updates, channel).start(15)
     
     def privmsg(self, user, channel, message):
-        if self.in_channel:
-            msg = IRCMessage(self, user, channel, message)
+        if self.factory.channels.all_joined:
+            c = self.factory.channels[channel]
+            # TODO: the channel list of users should be prefilled by this point
+            # so it is a quick lookup.
+            nickname = user.split("!", 1)[0]
+            try:
+                u = c.users[nickname]
+            except KeyError:
+                u = User(nickname)
+                c.add_user(u)
+            msg = Message(u, c, message)
             if channel.lower() == self.nickname.lower():
                 msg.parse_as_command()
             else:
                 msg.parse_as_normal()
 
 class DjangoBotService(service.Service):
-    def __init__(self, channel, nickname, password):
-        self.channel = channel
+    def __init__(self, channels, nickname, password):
+        self.channels = channels
         self.nickname = nickname
         self.password = password
     
     def getFactory(self):
         factory = protocol.ReconnectingClientFactory()
         factory.protocol = DjangoBotProtocol
-        factory.channel = self.channel
+        factory.channels = self.channels
         factory.nickname, factory.password = self.nickname, self.password
+        # create a channel for private messages
+        factory.channels.add(Channel(self.nickname, self.nickname, joined=True))
         return factory
 
 config = SafeConfigParser()
@@ -157,9 +247,14 @@ config.read("djangobot.ini")
 application = service.Application("djangobot")
 serv = service.MultiService()
 
+nickname = config.get("irc", "nickname")
+channels = ChannelPool()
+for name in [c.strip() for c in config.get("irc", "channels").split(",")]:
+    channels.add(Channel(name, nickname))
+
 dbs = DjangoBotService(
-    config.get("irc", "channel"),
-    config.get("irc", "nickname"),
+    channels,
+    nickname,
     config.get("irc", "password"))
 internet.TCPClient(
     config.get("irc", "server"), int(config.get("irc", "port")), dbs.getFactory(),
