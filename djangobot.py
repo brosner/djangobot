@@ -21,6 +21,8 @@ def log_irc_message(user, channel, message):
     """
     Logs this message to the database.
     """
+    if not int(config.get("logging", "enabled")):
+        return
     msg = models.Message(nickname=user.nickname, text=message)
     msg.channel = channel.db_obj
     msg.save()
@@ -298,6 +300,9 @@ from django.conf import settings
 settings.configure(**{
     "DATABASE_ENGINE": config.get("db", "engine"),
     "DATABASE_NAME": config.get("db", "name"),
+    "DATABASE_USER": config.get("db", "user"),
+    "DATABASE_PASSWORD": config.get("db", "password"),
+    "DATABASE_HOST": config.get("db", "host"),
 })
 
 from irc import models
@@ -380,9 +385,10 @@ class TracMonitorService(service.Service):
     def stopService(self):
         self.fetcher.stop()
         service.Service.stopService(self)
-        
-TracMonitorService(
-    "http://code.djangoproject.com", 60, channels
-).setServiceParent(serv)
+
+if int(config.get("trac", "enabled")):
+    TracMonitorService(
+        config.get("trac", "url"), int(config.get("trac", "interval")), channels
+    ).setServiceParent(serv)
 
 serv.setServiceParent(application)
