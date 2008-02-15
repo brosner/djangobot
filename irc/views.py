@@ -9,4 +9,4 @@ def channel_detail(request, channel_name):
     return render_to_response("irc/channel_detail.html", {
         "channel": channel,
         "messages": channel.message_set.all()[:100],
-    })
+    }, context_processor=RequestContext(request))
