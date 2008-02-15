@@ -11,9 +11,7 @@ import feedparser
 from twisted.words.protocols import irc
 from twisted.application import internet, service
 from twisted.internet import protocol, reactor, task
-
-queue = Queue.Queue()
-signed_on = False
+from twisted.python import log
 
 class HTTPHeadRequest(urllib2.Request):
     def get_method(self):
@@ -30,6 +28,7 @@ class User(object):
         """
         Sends a message to the user.
         """
+        log.msg("User.msg(nickname='%s', message='%s')" % (self.nickname, message))
         self.protocol.msg(self.nickname, message)
 
 class ChannelPool(object):
@@ -80,8 +79,10 @@ class Channel(object):
         self.nickname = nickname
         self.joined = joined
         self.users = {}
+        self.queue = Queue.Queue()
     
     def msg(self, message):
+        log.msg("Channel.msg(channel='%s', message='%s')" % (self.name, message))
         self.protocol.msg(self.name, message)
     
     def add_user(self, user):
@@ -181,12 +182,14 @@ class DjangoBotProtocol(irc.IRCClient):
     def trac_updates(self, channel):
         try:
             # dont block here so the bot can continue to work.
-            entries = queue.get(block=False)
+            entries = channel.queue.get(block=False)
         except Queue.Empty:
             pass
         else:
             for entry in reversed(entries):
-                self.msg(channel, entry)
+                channel.msg(entry)
+                # wait a couple seconds before sending the next message
+                time.sleep(2)
     
     def signedOn(self):
         """
@@ -206,12 +209,16 @@ class DjangoBotProtocol(irc.IRCClient):
         """
         Once the bot has signed into the channel begin the trac updates.
         """
-        self.factory.channels[channel].joined = True
-        task.LoopingCall(self.trac_updates, channel).start(15)
+        c = self.factory.channels[channel]
+        c.joined = True
+        task.LoopingCall(self.trac_updates, c).start(15)
     
     def privmsg(self, user, channel, message):
         if self.factory.channels.all_joined:
-            c = self.factory.channels[channel]
+            try:
+                c = self.factory.channels[channel]
+            except KeyError:
+                return
             # TODO: the channel list of users should be prefilled by this point
             # so it is a quick lookup.
             nickname = user.split("!", 1)[0]
@@ -266,8 +273,10 @@ class TracFeedFetcher(object):
         "changeset": True,
     }
     
-    def __init__(self, trac_url, **options):
+    def __init__(self, trac_url, interval, channels, **options):
         self.trac_url = trac_url
+        self.interval = interval
+        self.channels = channels
         self.opts.update(options)
         self.seen_entries = {}
     
@@ -280,7 +289,19 @@ class TracFeedFetcher(object):
         return url % self.trac_url
     
     def __call__(self):
-        self.fetch()
+        self.start()
+    
+    def start(self):
+        self._loop = task.LoopingCall(self.fetch)
+        self._loop.start(self.interval, now=True).addErrback(self._failed)
+    
+    def _failed(self, why):
+        self._loop.running = False
+        log.err(why)
+    
+    def stop(self):
+        if self._loop.running:
+            self._loop.stop()
     
     def fetch(self):
         feed = feedparser.parse(self.get_feed_url())
@@ -292,13 +313,26 @@ class TracFeedFetcher(object):
                 msg = "%s (%s)" % (entry.title, entry.link)
                 entries.append(msg.encode("UTF-8"))
             self.seen_entries[entry.id] = True
-        # limit the list entries to no more than 5
-        queue.put(entries[:5])
+        for channel in self.channels:
+            # limit the list entries to no more than 5
+            channel.queue.put(entries[:5])
 
+class TracMonitorService(service.Service):
+    def __init__(self, trac_url, interval, channels):
+        self.fetcher = TracFeedFetcher(trac_url, interval, channels)
+    
+    def startService(self):
+        reactor.callInThread(self.fetcher)
+        service.Service.startService(self)
+    
+    def stopService(self):
+        self.fetcher.stop()
+        service.Service.stopService(self)
+    
 # Keep this off until I get a configuration file working correctly.
 if False:
-    internet.TimerService(
-        60, TracFeedFetcher("http://code.djangoproject.com")
+    TracMonitorService(
+        "http://code.djangoproject.com", 60, channels
     ).setServiceParent(serv)
 
 serv.setServiceParent(application)
