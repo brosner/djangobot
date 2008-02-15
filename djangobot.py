@@ -122,16 +122,10 @@ class Message(object):
         # find any referenced tickets in this message
         # this requires the syntax #1000 to trigger.
         tickets = re.findall(r"(?:^|[\s(])#(\d+)\b", self.message)
-        for ticket in tickets:
-            url = "http://code.djangoproject.com/ticket/%s" % ticket
-            if self.check_url(url):
-                self.channel.msg(url)
+        self.cmd_ticket(*tickets, **dict(in_channel=True))
         # find changesets. requires r1000 syntax.
         changesets = re.findall(r"\br(\d+)\b", self.message)
-        for changeset in changesets:
-            url = "http://code.djangoproject.com/changeset/%s" % changeset
-            if self.check_url(url):
-                self.channel.msg(url)
+        self.cmd_changeset(*changesets, **dict(in_channel=True))
     
     def check_url(self, url):
         try:
@@ -147,7 +141,7 @@ class Message(object):
     
     def cmd_help(self, *commands):
         if not commands:
-            self.user.msg("available commands: who")
+            self.user.msg("available commands: who ticket changeset")
         else:
             for cmd in commands:
                 method = self.resolve_command(cmd)
@@ -157,6 +151,29 @@ class Message(object):
                     self.user.msg(method.help_text)
     cmd_help.usage = "[command ...]"
     cmd_help.help_text = "Sends back help about the given command(s)."
+    
+    def cmd_ticket(self, *tickets, **kwargs):
+        in_channel = kwargs.get("in_channel", False)
+        for ticket in tickets:
+            url = "http://code.djangoproject.com/ticket/%s" % ticket
+            if in_channel:
+                self.channel.msg(url)
+            else:
+                self.user.msg(url)
+    cmd_ticket.usage = "<ticket> [<ticket> ...]"
+    cmd_ticket.help_text = "Sends back Trac links to the given ticket(s)."
+    
+    def cmd_changeset(self, *changesets, **kwargs):
+        in_channel = kwargs.get("in_channel", False)
+        for changeset in changesets:
+            url = "http://code.djangoproject.com/changeset/%s" % changeset
+            if self.check_url(url):
+                if in_channel:
+                    self.channel.msg(url)
+                else:
+                    self.user.msg(url)
+    cmd_changeset.usage = "<changeset> [<changeset> ...]"
+    cmd_changeset.help_text = "Sends back Trac links to the given changeset(s)."
     
     def cmd_who(self, *nicknames):
         for nickname in [n.strip() for n in nicknames]:
