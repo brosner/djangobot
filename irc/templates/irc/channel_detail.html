@@ -1,0 +1,11 @@
+<h1>{{ channel }}</h1>
+
+<table>
+    {% for message in messages %}
+    <tr>
+        <td>{{ message.logged|date:"H:i" }}</td>
+        <td>{{ message.nickname }}</td>
+        <td>{{ message.text }}</td>
+    </tr>
+    {% endfor %}
+</table>

@@ -17,6 +17,14 @@ class HTTPHeadRequest(urllib2.Request):
     def get_method(self):
         return "HEAD"
 
+def log_irc_message(user, channel, message):
+    """
+    Logs this message to the database.
+    """
+    msg = models.Message(nickname=user.nickname, text=message)
+    msg.channel = channel.db_obj
+    msg.save()
+
 class User(object):
     """
     A single IRC user.
@@ -80,8 +88,13 @@ class Channel(object):
         self.joined = joined
         self.users = {}
         self.queue = Queue.Queue()
+        self.db_obj, created = models.Channel.objects.get_or_create(name=self.name)
     
     def msg(self, message):
+        # TODO: fix this by making sure nickname turns into a User object.
+        class dumbHACK(object):
+            nickname = self.nickname
+        log_irc_message(dumbHACK(), self, message)
         log.msg("Channel.msg(channel='%s', message='%s')" % (self.name, message))
         self.protocol.msg(self.name, message)
     
@@ -116,6 +129,7 @@ class Message(object):
             return cmd_func
     
     def parse_as_normal(self):
+        self.log()
         if self.message.lower().startswith(self.channel.nickname.lower() + ":"):
             self.channel.msg("%s: i am a bot. brosner is my creator. " \
                 "http://code.djangoproject.com/wiki/DjangoBot" % self.user)
@@ -189,6 +203,12 @@ class Message(object):
                     self.user.msg("%s is %s" % (nickname, response))
     cmd_who.usage = "<nickname> [<nickname> ...]"
     cmd_who.help_text = "Sends back the real name, location and URL for the nickname if the person is registered on djangopeople.net."
+    
+    def log(self):
+        """
+        Logs this message to the database.
+        """
+        log_irc_message(self.user, self.channel, self.message)
 
 class DjangoBotProtocol(irc.IRCClient):
     
@@ -272,6 +292,15 @@ config.read("djangobot.ini")
 
 application = service.Application("djangobot")
 serv = service.MultiService()
+
+from django.conf import settings
+
+settings.configure(**{
+    "DATABASE_ENGINE": config.get("db", "engine"),
+    "DATABASE_NAME": config.get("db", "name"),
+})
+
+from irc import models
 
 nickname = config.get("irc", "nickname")
 channels = ChannelPool()
