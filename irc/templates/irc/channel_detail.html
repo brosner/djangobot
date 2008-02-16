@@ -1,11 +1,26 @@
-<h1>{{ channel }}</h1>
+<html>
+<head>
+    <title>latest 100 | {{ channel }} logs</title>
+    <style type="text/css">
+    body {
+        font-family: helvetica;
+    }
+    </style>
+</head>
 
-<table>
-    {% for message in messages %}
-    <tr>
-        <td>{{ message.logged|date:"H:i" }}</td>
-        <td>{{ message.nickname }}</td>
-        <td>{{ message.text }}</td>
-    </tr>
-    {% endfor %}
-</table>
+<body>
+
+    <h1>latest 100 | {{ channel }}</h1>
+
+    <table>
+        {% for message in messages %}
+        <tr valign="top">
+            <td><a href="#">{{ message.logged|date:"H:i" }}</a></td>
+            <td align="right"><strong>{{ message.nickname }}</strong></td>
+            <td>{{ message.text|urlize }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</body>
+</html>
