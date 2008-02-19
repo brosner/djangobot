@@ -134,7 +134,7 @@ class Message(object):
         self.log()
         if self.message.lower().startswith(self.channel.nickname.lower() + ":"):
             self.channel.msg("%s: i am a bot. brosner is my creator. " \
-                "http://code.djangoproject.com/wiki/DjangoBot" % self.user)
+                "http://code.djangoproject.com/wiki/DjangoBot" % self.user.nickname)
         # find any referenced tickets in this message
         # this requires the syntax #1000 to trigger.
         tickets = re.findall(r"(?:^|[\s(])#(\d+)\b", self.message)
