@@ -11,6 +11,11 @@ class Channel(models.Model):
     
     def __unicode__(self):
         return self.name
+    
+    def get_absolute_url(self):
+        channel_name = self.name[0] == "#" and self.name[1:] or self.name
+        return ("channel_detail", (), {"channel_name": channel_name})
+    get_absolute_url = models.permalink(get_absolute_url)
 
 class Message(models.Model):
     channel = models.ForeignKey(Channel, db_index=True)
