@@ -1,0 +1,4 @@
+<h1>Channels</h1>
+{% for channel in object_list %}
+<a href="{{ channel.get_absolute_url }}">{{ channel }}</a><br />
+{% endfor %}
