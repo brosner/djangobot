@@ -23,6 +23,9 @@ def log_irc_message(user, channel, message):
     """
     if not int(config.get("logging", "enabled")):
         return
+    # TODO: look into database encoding to see if i can store this somehow.
+    # for now make things work.
+    message = unicode(message, errors="replace")
     msg = models.Message(nickname=user.nickname, text=message)
     msg.channel = channel.db_obj
     msg.save()
