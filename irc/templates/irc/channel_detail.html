@@ -16,8 +16,12 @@
         {% for message in messages %}
         <tr valign="top">
             <td><a href="#">{{ message.logged|date:"H:i" }}</a></td>
+            {% if message.is_action %}
+            <td colspan="2">{{ message.nickname }} {{ message.text|urlize }}</td>
+            {% else %}
             <td align="right"><strong>{{ message.nickname }}</strong></td>
             <td>{{ message.text|urlize }}</td>
+            {% endif %}
         </tr>
         {% endfor %}
     </table>
