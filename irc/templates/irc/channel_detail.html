@@ -1,14 +1,9 @@
-<html>
-<head>
-    <title>latest 100 | {{ channel }} logs</title>
-    <style type="text/css">
-    body {
-        font-family: helvetica;
-    }
-    </style>
-</head>
+{% extends "base_irc.html" %}
+{% block title %}DjangoBot: latest 100 | {{ channel }} logs{% endblock %}
+{% block heading %}DjangoBot: {{ channel }}{% endblock %}
+{% block content %}
 
-<body>
+{% load colorme %}
 
     <h1>latest 100 | {{ channel }}</h1>
 
@@ -19,12 +14,13 @@
             {% if message.is_action %}
             <td colspan="2">{{ message.nickname }} {{ message.text|urlize }}</td>
             {% else %}
-            <td align="right"><strong>{{ message.nickname }}</strong></td>
+            <td align="right" style="color: {{ message.nickname|colorize }};"><strong>{{ message.nickname }}</strong></td>
             <td>{{ message.text|urlize }}</td>
             {% endif %}
         </tr>
         {% endfor %}
     </table>
+{% endblock %}
 
-</body>
-</html>
+{# </body> #}
+{# </html> #}
