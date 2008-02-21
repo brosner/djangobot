@@ -9,5 +9,5 @@ urlpatterns = patterns("",
     url(r"^(?P<channel_name>[-\w]+)/$", channel_detail, name="channel_detail"),
     url(r"^$", object_list, {
         "queryset": Channel.objects.all(),
-    }),
+    }, name="channel_list"),
 )
