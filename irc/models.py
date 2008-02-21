@@ -21,6 +21,7 @@ class Message(models.Model):
     channel = models.ForeignKey(Channel, db_index=True)
     nickname = models.CharField(max_length=19, db_index=True)
     text = models.TextField()
+    is_action = models.BooleanField(default=False)
     logged = models.DateTimeField(default=datetime.now)
     
     class Admin:

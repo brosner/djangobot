@@ -17,7 +17,7 @@ class HTTPHeadRequest(urllib2.Request):
     def get_method(self):
         return "HEAD"
 
-def log_irc_message(user, channel, message):
+def log_irc_message(user, channel, message, is_action=False):
     """
     Logs this message to the database.
     """
@@ -26,7 +26,7 @@ def log_irc_message(user, channel, message):
     # TODO: look into database encoding to see if i can store this somehow.
     # for now make things work.
     message = unicode(message, errors="replace")
-    msg = models.Message(nickname=user.nickname, text=message)
+    msg = models.Message(nickname=user.nickname, text=message, is_action=is_action)
     msg.channel = channel.db_obj
     msg.save()
 
@@ -111,10 +111,11 @@ class Message(object):
     """
     A single IRC message sent from a channel
     """
-    def __init__(self, user, channel, message):
+    def __init__(self, user, channel, message, is_action=False):
         self.user = user
         self.channel = channel
         self.message = message
+        self.is_action = is_action
     
     def parse_as_command(self):
         try:
@@ -213,7 +214,7 @@ class Message(object):
         """
         Logs this message to the database.
         """
-        log_irc_message(self.user, self.channel, self.message)
+        log_irc_message(self.user, self.channel, self.message, is_action=self.is_action)
 
 class DjangoBotProtocol(irc.IRCClient):
     
@@ -257,7 +258,7 @@ class DjangoBotProtocol(irc.IRCClient):
         c.joined = True
         task.LoopingCall(self.trac_updates, c).start(15)
     
-    def privmsg(self, user, channel, message):
+    def privmsg(self, user, channel, message, is_action=False):
         if self.factory.channels.all_joined:
             try:
                 c = self.factory.channels[channel]
@@ -271,11 +272,14 @@ class DjangoBotProtocol(irc.IRCClient):
             except KeyError:
                 u = User(nickname)
                 c.add_user(u)
-            msg = Message(u, c, message)
+            msg = Message(u, c, message, is_action=is_action)
             if channel.lower() == self.nickname.lower():
                 msg.parse_as_command()
             else:
                 msg.parse_as_normal()
+    
+    def action(self, user, channel, message):
+        self.privmsg(user, channel, message, is_action=True)
 
 class DjangoBotService(service.Service):
     def __init__(self, channels, nickname, password):
