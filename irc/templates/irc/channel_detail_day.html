@@ -5,8 +5,10 @@
 
     <h2>{{ date|date:"Y-n-j" }}</h2>
 
+	{% load cache %}
 	{% load colorme %}
 	
+	{% cache 43200 messages date %}
     <table>
         {% for message in messages %}
         <tr valign="top">
@@ -20,6 +22,7 @@
         </tr>
         {% endfor %}
     </table>
+    {% endcache %}
 {% endblock %}
 
 {% block sidebar %}
