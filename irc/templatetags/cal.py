@@ -3,7 +3,7 @@ import calendar
 from calendar import Calendar, month_name, day_abbr
 
 from django import template
-from djangobot.irc.models import Message
+from irc.models import Message
 
 register = template.Library()
 
