@@ -1,19 +1,14 @@
 {% extends "base_irc.html" %}
-{% block title %}DjangoBot: latest 100 | {{ channel }} logs{% endblock %}
+{% block title %}DjangoBot: {{ date|date:"Y-n-j" }} | {{ channel }} logs{% endblock %}
 {% block heading %}DjangoBot: {{ channel }}{% endblock %}
 {% block content %}
 
-    <h1>latest 100 | {{ channel }}</h1>
+    <h2>{{ date|date:"Y-n-j" }}</h2>
 
 	{% load colorme %}
 	
     <table>
         {% for message in messages %}
-		{% ifchanged %}
-	</table>
-	<h3><a href="{{ channel.get_absolute_url }}{{ message.logged|date:"Y/m/d/"}}">{{ message.logged|date:"N jS, Y" }}</h3>
-	<table>
-		{% endifchanged %}
         <tr valign="top">
             <td><a href="#">{{ message.logged|date:"H:i" }}</a></td>
             {% if message.is_action %}
