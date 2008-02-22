@@ -9,6 +9,11 @@
 
     <table>
         {% for message in messages %}
+		{% ifchanged %}
+	</table>
+	<h3>{{ message.logged|date:"N jS, Y" }}</h3>
+	<table>
+		{% endifchanged %}
         <tr valign="top">
             <td><a href="#">{{ message.logged|date:"H:i" }}</a></td>
             {% if message.is_action %}
