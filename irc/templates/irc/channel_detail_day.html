@@ -8,7 +8,7 @@
 	{% load cache %}
 	{% load colorme %}
 	
-	{% cache 43200 messages date %}
+	{% cache 43200 messages channel date %}
     <table>
         {% for message in messages %}
         <tr valign="top">
