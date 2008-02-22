@@ -21,6 +21,6 @@ def channel_detail_day(request, channel_name, year, month, day):
     return render_to_response("irc/channel_detail_day.html", {
         "channel": channel,
         "date": datetime.date(int(year), int(month), int(day)),
-        "messages": reversed(channel.message_set.filter(logged__year=int(year), 
-            logged__month=int(month), logged__day=int(day)).order_by("-logged")),
+        "messages": channel.message_set.filter(logged__year=int(year),
+            logged__month=int(month), logged__day=int(day)).order_by("logged"),
     }, context_instance=RequestContext(request))
