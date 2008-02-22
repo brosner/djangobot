@@ -15,7 +15,7 @@ class CalendarNode(template.Node):
     def render(self, context):
         date = self.date.resolve(context)
         channel = self.channel.resolve(context)
-        message_list = Message.objects.filter(logged__year=date.year, logged__month=date.month, channel=channel)
+        message_list = Message.objects.filter(logged__year=date.year, logged__month=date.month, channel=channel).dates('logged', 'day')
         c = HTMLFormatCalendar(message_list, channel)
         return c.formatmonth(date.year, date.month)
 
@@ -53,6 +53,7 @@ class HTMLFormatCalendar(Calendar):
                   'other_month_class': 'otherMonth',
                   'day_name_class': 'dayName',
                   'day_class': 'day',
+                  'today_class': 'specialDay'
                  }
     
     def __init__(self, event_list, channel):
@@ -67,10 +68,14 @@ class HTMLFormatCalendar(Calendar):
         if day == 0:
             return '<td class="%s">&nbsp;</td>' % (self.cssclasses['other_month_class'],) # day outside month
         else:
+            class_style = self.cssclasses['day_class']
+            if day == datetime.datetime.today().day:
+                class_style = self.cssclasses['today_class']
+            
             for e in self.event_list:
-                if e.logged.day == day:
-                    return '<td class="%s"><a href="%s%s/">%d</a></td>' % (self.cssclasses['day_class'], self.channel.get_absolute_url(), e.logged.strftime("%Y/%m/%d"), day,)
-            return '<td class="%s">%d</td>' % (self.cssclasses['day_class'], day)
+                if e.day == day:
+                    return '<td class="%s"><a href="%s%s/">%d</a></td>' % (class_style, self.channel.get_absolute_url(), e.strftime("%Y/%m/%d"), day,)
+            return '<td class="%s">%d</td>' % (class_style, day)
 
     def formatweek(self, theweek):
         """
