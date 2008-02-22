@@ -12,9 +12,11 @@ class Channel(models.Model):
     def __unicode__(self):
         return self.name
     
+    def clean_name(self):
+        return self.name[0] == "#" and self.name[1:] or self.name
+    
     def get_absolute_url(self):
-        channel_name = self.name[0] == "#" and self.name[1:] or self.name
-        return ("channel_detail", (), {"channel_name": channel_name})
+        return ("channel_detail", (), {"channel_name": self.clean_name()})
     get_absolute_url = models.permalink(get_absolute_url)
 
 class Message(models.Model):
