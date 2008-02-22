@@ -11,7 +11,7 @@
         {% for message in messages %}
 		{% ifchanged %}
 	</table>
-	<h3><a href="{{ channel.get_absolute_url }}{{ message.logged|date:"Y/m/d/"}}">{{ message.logged|date:"N jS, Y" }}</h3>
+	<h3><a href="{{ channel.get_absolute_url }}{{ message.logged|date:"Y/m/d/"}}">{{ message.logged|date:"N jS, Y" }}</a></h3>
 	<table>
 		{% endifchanged %}
         <tr valign="top">
