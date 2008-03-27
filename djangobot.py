@@ -23,9 +23,7 @@ def log_irc_message(user, channel, message, is_action=False):
     """
     if not int(config.get("logging", "enabled")):
         return
-    # TODO: look into database encoding to see if i can store this somehow.
-    # for now make things work.
-    message = smart_unicode(message, errors="replace")
+    message = force_unicode(message, errors="replace")
     msg = models.Message(nickname=user.nickname, text=message, is_action=is_action)
     msg.channel = channel.db_obj
     msg.save()
@@ -312,7 +310,7 @@ settings.configure(**{
     "DATABASE_HOST": config.get("db", "host"),
 })
 
-from django.utils.encoding import smart_unicode
+from django.utils.encoding import force_unicode
 
 from irc import models
 
