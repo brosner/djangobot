@@ -1,4 +1,5 @@
 
+import os
 import re
 import time
 import urllib2
@@ -308,7 +309,11 @@ settings.configure(**{
     "DATABASE_USER": config.get("db", "user"),
     "DATABASE_PASSWORD": config.get("db", "password"),
     "DATABASE_HOST": config.get("db", "host"),
+    "TIME_ZONE": "UTC",
 })
+
+os.environ["TZ"] = settings.TIME_ZONE
+time.tzset()
 
 from django.utils.encoding import force_unicode
 
