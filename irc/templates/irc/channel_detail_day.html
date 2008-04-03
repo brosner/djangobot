@@ -8,8 +8,9 @@
 	{% load cache %}
 	{% load colorme %}
 	
-	{% cache 43200 messages channel date %}
     <table>
+        {% if messages %}
+        {% cache 43200 messages channel date %}
         {% for message in messages %}
         <tr valign="top">
             <td><a href="#">{{ message.logged|date:"H:i" }}</a></td>
@@ -21,8 +22,9 @@
             {% endif %}
         </tr>
         {% endfor %}
+        {% endcache %}
+        {% endif %}
     </table>
-    {% endcache %}
 {% endblock %}
 
 {% block sidebar %}
