@@ -17,10 +17,11 @@ channel_detail = never_cache(channel_detail)
 
 def channel_detail_day(request, channel_name, year, month, day):
     channel = get_object_or_404(Channel, name="#%s" % channel_name)
-    
+    date = datetime.date(*map(int, (year, month, day)))
     return render_to_response("irc/channel_detail_day.html", {
         "channel": channel,
-        "date": datetime.date(int(year), int(month), int(day)),
-        "messages": channel.message_set.filter(logged__year=int(year),
-            logged__month=int(month), logged__day=int(day)).order_by("logged"),
+        "date": date,
+        "messages": channel.message_set.filter(
+            logged__range=(date, date + datetime.timedelta(days=1)),
+        ).order_by("logged"),
     }, context_instance=RequestContext(request))
