@@ -312,6 +312,7 @@ settings.configure(**{
     "TIME_ZONE": "UTC",
 })
 
+log("setting timezone to %s" % settings.TIME_ZONE)
 os.environ["TZ"] = settings.TIME_ZONE
 time.tzset()
 
