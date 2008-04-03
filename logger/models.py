@@ -6,6 +6,9 @@ from django.db import models
 class Channel(models.Model):
     name = models.CharField(max_length=50, db_index=True)
     
+    class Meta:
+        db_table = "irc_channel" # for backward compatibility
+    
     class Admin:
         pass
     
@@ -31,6 +34,7 @@ class Message(models.Model):
         list_filter = ("channel", "logged")
     
     class Meta:
+        db_table = "irc_message" # for backward compatibility
         ordering = ("logged",)
     
     def __unicode__(self):

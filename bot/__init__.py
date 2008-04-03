@@ -5,14 +5,17 @@ import time
 import urllib2
 import Queue
 
-from ConfigParser import SafeConfigParser
-
 import feedparser
 
 from twisted.words.protocols import irc
 from twisted.application import internet, service
 from twisted.internet import protocol, reactor, task
 from twisted.python import log
+
+from django.conf import settings
+from django.utils.encoding import force_unicode
+
+from logger import models
 
 class HTTPHeadRequest(urllib2.Request):
     def get_method(self):
@@ -22,7 +25,7 @@ def log_irc_message(user, channel, message, is_action=False):
     """
     Logs this message to the database.
     """
-    if not int(config.get("logging", "enabled")):
+    if not settings.BOT_LOGGING:
         return
     message = force_unicode(message, errors="replace")
     msg = models.Message(nickname=user.nickname, text=message, is_action=is_action)
@@ -295,44 +298,6 @@ class DjangoBotService(service.Service):
         factory.channels.add(Channel(self.nickname, self.nickname, joined=True))
         return factory
 
-config = SafeConfigParser()
-config.read("djangobot.ini")
-
-application = service.Application("djangobot")
-serv = service.MultiService()
-
-from django.conf import settings
-
-settings.configure(**{
-    "DATABASE_ENGINE": config.get("db", "engine"),
-    "DATABASE_NAME": config.get("db", "name"),
-    "DATABASE_USER": config.get("db", "user"),
-    "DATABASE_PASSWORD": config.get("db", "password"),
-    "DATABASE_HOST": config.get("db", "host"),
-    "TIME_ZONE": "UTC",
-})
-
-log("setting timezone to %s" % settings.TIME_ZONE)
-os.environ["TZ"] = settings.TIME_ZONE
-time.tzset()
-
-from django.utils.encoding import force_unicode
-
-from irc import models
-
-nickname = config.get("irc", "nickname")
-channels = ChannelPool()
-for name in [c.strip() for c in config.get("irc", "channels").split(",")]:
-    channels.add(Channel(name, nickname))
-
-dbs = DjangoBotService(
-    channels,
-    nickname,
-    config.get("irc", "password"))
-internet.TCPClient(
-    config.get("irc", "server"), int(config.get("irc", "port")), dbs.getFactory(),
-).setServiceParent(serv)
-
 class TracFeedFetcher(object):
     opts = {
         "ticket": True,
@@ -399,9 +364,8 @@ class TracMonitorService(service.Service):
         self.fetcher.stop()
         service.Service.stopService(self)
 
-if int(config.get("trac", "enabled")):
-    TracMonitorService(
-        config.get("trac", "url"), int(config.get("trac", "interval")), channels
-    ).setServiceParent(serv)
+# if int(config.get("trac", "enabled")):
+#     TracMonitorService(
+#         config.get("trac", "url"), int(config.get("trac", "interval")), channels
+#     ).setServiceParent(serv)
 
-serv.setServiceParent(application)
