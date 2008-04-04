@@ -28,6 +28,7 @@ class Message(models.Model):
     text = models.TextField()
     is_action = models.BooleanField(default=False)
     logged = models.DateTimeField(default=datetime.now)
+    is_blocked = models.BooleanField(default=False)
     
     class Admin:
         list_display = ("channel", "nickname", "text", "logged")
