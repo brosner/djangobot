@@ -26,6 +26,8 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
+    "django_evolution",
+    
     "bot",
     "logger",
 )
