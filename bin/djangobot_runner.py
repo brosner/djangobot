@@ -11,6 +11,7 @@ from twisted.python import log
 
 from django.conf import settings
 from djangobot.bot import DjangoBotService, ChannelPool, Channel
+from djangobot.bot import DjangoPeopleMonitorService
 
 application = service.Application("djangobot")
 serv = service.MultiService()
@@ -27,5 +28,7 @@ internet.TCPClient(
     settings.BOT_IRC_SERVER, settings.BOT_IRC_PORT,
     dbs.getFactory(),
 ).setServiceParent(serv)
+
+DjangoPeopleMonitorService().setServiceParent(serv)
 
 serv.setServiceParent(application)

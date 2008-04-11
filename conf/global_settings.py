@@ -26,7 +26,9 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-    "django_evolution",
+    # "django_evolution",
+    
+    "django.contrib.sessions",
     
     "bot",
     "logger",
