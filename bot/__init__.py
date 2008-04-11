@@ -2,6 +2,7 @@
 import os
 import re
 import time
+import urllib
 import urllib2
 import Queue
 
@@ -16,6 +17,8 @@ from django.conf import settings
 from django.utils.encoding import force_unicode
 
 from logger import models
+
+activity_set = set()
 
 class HTTPHeadRequest(urllib2.Request):
     def get_method(self):
@@ -138,6 +141,7 @@ class Message(object):
     
     def parse_as_normal(self):
         self.log()
+        activity_set.add(self.user)
         if self.message.lower().startswith(self.channel.nickname.lower() + ":"):
             self.channel.msg("%s: i am a bot. brosner is my creator. " \
                 "http://code.djangoproject.com/wiki/DjangoBot" % self.user.nickname)
@@ -156,7 +160,7 @@ class Message(object):
             return False
         else:
             return True
-    
+        
     def cmd_unknown(self, *params):
         self.user.msg("unknown command")
     cmd_unknown.usage = "is an unknown command."
@@ -259,6 +263,12 @@ class DjangoBotProtocol(irc.IRCClient):
         c = self.factory.channels[channel]
         c.joined = True
         task.LoopingCall(self.trac_updates, c).start(15)
+    
+    def userJoined(self, user, channel):
+        pass
+    
+    def userLeft(self, user, channel):
+        pass
     
     def privmsg(self, user, channel, message, is_action=False):
         if self.factory.channels.all_joined:
@@ -369,3 +379,50 @@ class TracMonitorService(service.Service):
 #         config.get("trac", "url"), int(config.get("trac", "interval")), channels
 #     ).setServiceParent(serv)
 
+class DjangoPeopleMonitor(object):
+    def __init__(self):
+        self.interval = 60
+    
+    def __call__(self):
+        self.run()
+    
+    def run(self):
+        self._loop = task.LoopingCall(self.execute)
+        self._loop.start(self.interval, now=True).addErrback(self._failed)
+
+    def _failed(self, why):
+        self._loop.running = False
+        log.err(why)
+
+    def stop(self):
+        if self._loop.running:
+            self._loop.stop()
+
+    def execute(self):
+        for user in activity_set:
+            self.send(user)
+        activity_set.clear()
+    
+    def send(self, user):
+        try:
+            u = urllib2.urlopen("http://djangopeople.net/api/irc_spotted/%s/" % user.nickname,
+                    urllib.urlencode({"sekrit": settings.DJANGOPEOPLE_SEKRIT}))
+        except urllib2.HTTPError:
+            raise
+        else:
+            ret = u.read()
+        if ret == "FIRST_TIME_SEEN":
+            user.msg("You're now being tracked on http://djangopeople.net/irc/active/ - log in to djangopeople.net and edit your privacy preferences if you'd rather not be")
+        log.msg("%s - %s" % (user.nickname, ret))
+
+class DjangoPeopleMonitorService(service.Service):
+    def __init__(self):
+        self.monitor = DjangoPeopleMonitor()
+    
+    def startService(self):
+        reactor.callInThread(self.monitor)
+        service.Service.startService(self)
+    
+    def stopService(self):
+        self.monitor.stop()
+        service.Service.stopService(self)
