@@ -29,6 +29,9 @@
             {% endif %}
         </tr>
         {% endfor %}
+        {% if is_paginated %}
+            {% include "logger/paginator.html" %}
+        {% endif %}
     </table>
 {% endblock %}
 

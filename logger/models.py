@@ -2,6 +2,9 @@
 from datetime import datetime
 
 from django.db import models
+from django.conf import settings
+
+import djangosphinx
 
 class Channel(models.Model):
     name = models.CharField(max_length=50, db_index=True)
@@ -29,6 +32,7 @@ class Message(models.Model):
     is_action = models.BooleanField(default=False)
     logged = models.DateTimeField(default=datetime.now)
     is_blocked = models.BooleanField(default=False)
+    search = djangosphinx.SphinxSearch(settings.SEARCH_INDEX_NAME)
     
     class Admin:
         list_display = ("channel", "nickname", "text", "logged")
