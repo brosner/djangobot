@@ -19,7 +19,9 @@ def get_messages(channel, query=""):
 def channel_detail(request, channel_name):
     channel = get_object_or_404(Channel, name="#%s" % channel_name)
     query = request.GET.get("q", "")
-    paginator = QuerySetPaginator(get_messages(channel, query), settings.PAGINATE_BY)
+    paginator = QuerySetPaginator(
+        get_messages(channel, query).order_by("-logged"),
+        settings.PAGINATE_BY)
     try:
         page_number = int(request.GET.get("page", 1))
     except ValueError:
@@ -35,7 +37,7 @@ def channel_detail(request, channel_name):
         "page": page,
         "paginator": paginator,
         "is_paginated": paginator.count >= settings.PAGINATE_BY,
-        "messages": reversed(page.object_list.order_by("-logged")),
+        "messages": reversed(page.object_list),
     }
     return render_to_response("logger/channel_detail.html", 
         context, context_instance=RequestContext(request))
