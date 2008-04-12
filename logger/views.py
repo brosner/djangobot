@@ -1,6 +1,7 @@
 
 import datetime
 
+from django.conf import settings
 from django.template import RequestContext
 from django.views.decorators.cache import never_cache
 from django.shortcuts import get_object_or_404, render_to_response
