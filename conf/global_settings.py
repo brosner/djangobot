@@ -4,7 +4,7 @@ import os
 from django.conf.global_settings import *
 
 LOCAL_DEV = False
-
+PAGINATE_BY = 100
 TIME_ZONE = "UTC"
 
 BOT_IRC_SERVER = "irc.freenode.org"
@@ -33,3 +33,5 @@ INSTALLED_APPS = (
     "bot",
     "logger",
 )
+
+SEARCH_INDEX_NAME = "logger_message"
