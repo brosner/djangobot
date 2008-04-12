@@ -14,7 +14,7 @@ from logger.models import Channel, Message
 def get_messages(channel, query=""):
     if query:
         return Message.search.query(query)
-    return channel.message_set
+    return channel.message_set.all()
 
 def channel_detail(request, channel_name):
     channel = get_object_or_404(Channel, name="#%s" % channel_name)
