@@ -19,7 +19,7 @@ def get_messages(channel, query=""):
 def channel_detail(request, channel_name):
     channel = get_object_or_404(Channel, name="#%s" % channel_name)
     messages = get_messages(channel, request.GET.get("q", ""))
-    paginator = Paginator(messages, settings.PAGINATE_BY)
+    paginator = QuerySetPaginator(messages, settings.PAGINATE_BY)
     try:
         page_number = int(request.GET.get("page", 1))
     except ValueError:
