@@ -38,4 +38,11 @@
 {% block sidebar %}
 {% load cal %}
 {% display_calendar for date in channel %}
+
+<h2>Top Talkers</h2>
+<ol>
+    {% for line in channel.top_talkers %}
+    <li>{{ line.nickname }}</li>
+    {% endfor %}
+</ol>
 {% endblock %}
