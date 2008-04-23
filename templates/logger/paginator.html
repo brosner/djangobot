@@ -1,19 +1,24 @@
+{% load humanize %}
 {% if page.has_other_pages %}
     {% spaceless %}
     <div class="paginator">
-        Page {{ page.number }} of {{ paginator.num_pages }}&nbsp;&nbsp;
+        Page {{ page.number }} of {{ paginator.num_pages|intcomma }}&nbsp;&nbsp;
         {% if page.has_previous %}
         <a href="{{ request.path }}?{% if query %}search={{ query }}&{% endif %}page={{ page.previous_page_number }}">&larr; Previous</a>&nbsp;
         {% endif %}
 
-        {% for p in paginator.page_range %}
+        {% for p in page_range %}
+        {% ifequal p "..." %}
+        <strong>{{ p }}</strong>&nbsp;
+        {% else %}
         <a href="{{ request.path }}?{% if query %}search={{ query }}&{% endif %}page={{ p }}">{% ifequal p page.number %}<strong>{{ p }}</strong>{% else %}{{ p }}{% endifequal %}</a>&nbsp;
+        {% endifequal %}
         {% endfor %}
 
         {% if page.has_next %}
         <a href="{{ request.path }}?{% if query %}search={{ query }}&{% endif %}page={{ page.next_page_number }}">Next &rarr;</a>
         {% endif %}
-        <span style="padding-left: 15px;">({{ paginator.count }} total)</span>
+        <span style="padding-left: 15px;">({{ paginator.count|intcomma }} total)</span>
     </div>
     {% endspaceless %}
 {% endif %}
