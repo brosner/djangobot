@@ -318,3 +318,6 @@ label
 	font-weight:normal;
 }
 
+div.paginator {
+    padding: 15px 7px;
+}

@@ -29,6 +29,7 @@ INSTALLED_APPS = (
     # "django_evolution",
     
     "django.contrib.sessions",
+    "django.contrib.humanize",
     
     "bot",
     "logger",

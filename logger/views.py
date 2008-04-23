@@ -16,6 +16,12 @@ def get_messages(channel, query=""):
         return Message.search.query(query)
     return channel.message_set.all()
 
+def smart_page_range(paginator):
+    # TODO: make this smarter :P
+    page_range = [1, 2, 3, 4, "..."]
+    page_range.extend(range(paginator.num_pages - 3, paginator.num_pages + 1))
+    return page_range
+
 def channel_detail(request, channel_name):
     channel = get_object_or_404(Channel, name="#%s" % channel_name)
     query = request.GET.get("q", "")
@@ -35,6 +41,7 @@ def channel_detail(request, channel_name):
         "channel": channel,
         "date": datetime.datetime.today(),
         "page": page,
+        "page_range": smart_page_range(paginator),
         "paginator": paginator,
         "is_paginated": paginator.count >= settings.PAGINATE_BY,
         "messages": reversed(page.object_list),
