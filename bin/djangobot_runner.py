@@ -29,6 +29,7 @@ internet.TCPClient(
     dbs.getFactory(),
 ).setServiceParent(serv)
 
-DjangoPeopleMonitorService().setServiceParent(serv)
+if BOT_DJANGOPEOPLE:
+    DjangoPeopleMonitorService().setServiceParent(serv)
 
 serv.setServiceParent(application)
