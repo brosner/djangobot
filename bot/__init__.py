@@ -180,7 +180,7 @@ class Message(object):
     
     def cmd_ticket(self, *tickets, **kwargs):
         in_channel = kwargs.get("in_channel", False)
-        if self.channel.name == "django-hotclub":
+        if self.channel.name == "#django-hotclub":
             base_url = "http://code.google.com/p/django-hotclub/issues/detail?id=%s"
         else:
             base_url = "http://code.djangoproject.com/ticket/%s"
@@ -195,7 +195,7 @@ class Message(object):
     
     def cmd_changeset(self, *changesets, **kwargs):
         in_channel = kwargs.get("in_channel", False)
-        if self.channel.name == "django-hotclub":
+        if self.channel.name == "#django-hotclub":
             base_url = "http://code.google.com/p/django-hotclub/source/detail?r=%s"
         else:
             base_url = "http://code.djangoproject.com/changeset/%s"
