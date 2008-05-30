@@ -186,10 +186,11 @@ class Message(object):
             base_url = "http://code.djangoproject.com/ticket/%s"
         for ticket in tickets:
             url = base_url % ticket
-            if in_channel:
-                self.channel.msg(url)
-            else:
-                self.user.msg(url)
+            if self.check_url(url):
+                if in_channel:
+                    self.channel.msg(url)
+                else:
+                    self.user.msg(url)
     cmd_ticket.usage = "<ticket> [<ticket> ...]"
     cmd_ticket.help_text = "Sends back Trac links to the given ticket(s)."
     
