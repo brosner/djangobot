@@ -379,6 +379,9 @@ class TracMonitorService(service.Service):
 #         config.get("trac", "url"), int(config.get("trac", "interval")), channels
 #     ).setServiceParent(serv)
 
+class BadRequest(Exception):
+    pass
+
 class DjangoPeopleMonitor(object):
     def __init__(self):
         self.interval = 60
@@ -400,7 +403,10 @@ class DjangoPeopleMonitor(object):
 
     def execute(self):
         for user in activity_set:
-            self.send(user)
+            try:
+                self.send(user)
+            except BadRequest:
+                pass
         activity_set.clear()
     
     def send(self, user):
@@ -408,7 +414,7 @@ class DjangoPeopleMonitor(object):
             u = urllib2.urlopen("http://djangopeople.net/api/irc_spotted/%s/" % user.nickname,
                     urllib.urlencode({"sekrit": settings.DJANGOPEOPLE_SEKRIT}))
         except urllib2.HTTPError:
-            raise
+            raise BadRequest
         else:
             ret = u.read()
         if ret == "FIRST_TIME_SEEN":
