@@ -271,7 +271,6 @@ class DjangoBotProtocol(irc.IRCClient):
         """
         c = self.factory.channels[channel]
         c.joined = True
-        task.LoopingCall(self.trac_updates, c).start(15)
     
     def userJoined(self, user, channel):
         pass
