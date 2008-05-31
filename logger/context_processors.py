@@ -1,3 +1,6 @@
 
+from django.conf import settings
+
 def logger(request):
-    return {"user_timezone": "US/Mountain"}
+    user_timezone = request.session.get("user_timezone", settings.TIME_ZONE)
+    return {"user_timezone": user_timezone}
