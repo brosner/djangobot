@@ -421,7 +421,7 @@ class DjangoPeopleMonitor(object):
         try:
             u = urllib2.urlopen("http://djangopeople.net/api/irc_spotted/%s/" % user.nickname,
                     urllib.urlencode({"sekrit": settings.DJANGOPEOPLE_SEKRIT}))
-        except urllib2.HTTPError:
+        except (urllib2.HTTPError, urllib2.URLError):
             raise BadRequest
         else:
             ret = u.read()
