@@ -215,7 +215,7 @@ class Message(object):
             try:
                 u = urllib2.urlopen("http://djangopeople.net/api/irc_lookup/%s/" % nickname)
             except urllib2.HTTPError:
-                self.irc.msg(self.user, "something went wrong!")
+                self.user.msg("something went wrong!")
             else:
                 response = u.read()
                 if response == "no match":
