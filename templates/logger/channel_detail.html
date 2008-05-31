@@ -11,11 +11,11 @@
         {% for message in messages %}
 		{% ifchanged %}
 	</table>
-	<h3><a href="{{ channel.get_absolute_url }}{{ message.logged|date:"Y/m/d/"}}">{{ message.logged|date:"N jS, Y" }}</a></h3>
+	<h3><a href="{{ channel.get_absolute_url }}{{ message.logged|localtime:user_timezone|date:"Y/m/d/"}}">{{ message.logged|date:"N jS, Y" }}</a></h3>
 	<table>
 		{% endifchanged %}
         <tr valign="top">
-            <td><a href="#">{{ message.logged|date:"H:i" }}</a></td>
+            <td><a href="#">{{ message.logged|localtime:user_timezone|date:"H:i" }}</a></td>
             {% if not message.is_blocked %}
             {% if message.is_action %}
             <td colspan="2">{{ message.nickname }} {{ message.text|urlizetrunc:"50" }}</td>

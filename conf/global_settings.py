@@ -25,11 +25,21 @@ TEMPLATE_DIRS = (
     #
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'logger.context_processors.logger',
+)
+
 INSTALLED_APPS = (
     # "django_evolution",
     
     "django.contrib.sessions",
     "django.contrib.humanize",
+    
+    "timezones",
     
     "bot",
     "logger",
