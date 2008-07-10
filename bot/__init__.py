@@ -109,8 +109,7 @@ class Channel(object):
         self.joined = joined
         self.users = {}
         self.queue = Queue.Queue()
-        self.db_obj
-        created = models.Channel.objects.get_or_create(name=self.name)
+        self.db_obj, created = models.Channel.objects.get_or_create(name=self.name)
 
     def msg(self, message):
         # TODO: fix this by making sure nickname turns into a User object.
