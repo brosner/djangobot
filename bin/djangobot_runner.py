@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 from django.core.management import setup_environ
 import settings as settings_mod
