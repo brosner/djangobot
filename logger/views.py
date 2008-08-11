@@ -74,7 +74,7 @@ def channel_detail_day(request, channel_name, year, month, day):
         "channel": channel,
         "channel_name": channel_name, # used for {% url %}
         "date": date,
-        "messages": channel.messages.filter(
+        "messages": channel.message_set.filter(
             logged__range=(date, date + datetime.timedelta(days=1)),
         ).order_by("logged"),
     }, context_instance=RequestContext(request))
