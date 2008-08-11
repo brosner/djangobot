@@ -1,7 +1,7 @@
 {% extends "base_irc.html" %}
 {% block title %}DjangoBot: {{ date|date:"Y-n-j" }} | {{ channel }} logs{% endblock %}
 {% block heading %}DjangoBot: {{ channel }}{% endblock %}
-{% block search_post_url %}{% url channel_search channel %}{% endblock %}
+{% block search_post_url %}{% url channel_search channel_name %}{% endblock %}
 {% block content %}
 
     <h2>{{ date|date:"Y-n-j" }}</h2>
