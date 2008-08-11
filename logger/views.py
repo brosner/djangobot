@@ -31,6 +31,7 @@ def channel_search(request, channel_name):
         raise Http404
     context = {
         "channel": channel,
+        "channel_name": channel_name, # used for {% url %}
         "date": datetime.datetime.today(),
         "page": page,
         "page_range": smart_page_range(paginator),
@@ -54,6 +55,7 @@ def channel_detail(request, channel_name):
         raise Http404
     context = {
         "channel": channel,
+        "channel_name": channel_name, # used for {% url %}
         "date": datetime.datetime.today(),
         "page": page,
         "page_range": smart_page_range(paginator),
@@ -70,6 +72,7 @@ def channel_detail_day(request, channel_name, year, month, day):
     date = datetime.date(*map(int, (year, month, day)))
     return render_to_response("logger/channel_detail_day.html", {
         "channel": channel,
+        "channel_name": channel_name, # used for {% url %}
         "date": date,
         "messages": channel.messages.filter(
             logged__range=(date, date + datetime.timedelta(days=1)),
