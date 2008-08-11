@@ -6,15 +6,10 @@ from django.template import RequestContext
 from django.views.decorators.cache import never_cache
 from django.shortcuts import get_object_or_404, render_to_response
 from django.views.generic.date_based import archive_day
-from django.http import Http404, HttpResponseBadRequest
-from django.core.paginator import Paginator, QuerySetPaginator, InvalidPage
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
+from django.core.paginator import Paginator, InvalidPage
 
 from logger.models import Channel, Message
-
-def get_messages(channel, query=""):
-    if query:
-        return Message.search.query(query)
-    return channel.message_set.all()
 
 def smart_page_range(paginator):
     # TODO: make this smarter :P
@@ -22,10 +17,33 @@ def smart_page_range(paginator):
     page_range.extend(range(paginator.num_pages - 3, paginator.num_pages + 1))
     return page_range
 
-def channel_detail(request, channel_name):
+def channel_search(request, channel_name):
     channel = get_object_or_404(Channel, name="#%s" % channel_name)
     query = request.GET.get("q", "")
-    paginator = QuerySetPaginator(get_messages(channel, query), settings.PAGINATE_BY)
+    paginator = Paginator(Message.search.query(query).filter(channel_id=channel.pk).order_by("logged"), settings.PAGINATE_BY)
+    try:
+        page_number = int(request.GET.get("page", 1))
+    except ValueError:
+        return HttpResponseBadRequest()
+    try:
+        page = paginator.page(page_number)
+    except InvalidPage:
+        raise Http404
+    context = {
+        "channel": channel,
+        "date": datetime.datetime.today(),
+        "page": page,
+        "page_range": smart_page_range(paginator),
+        "paginator": paginator,
+        "is_paginated": paginator.count >= settings.PAGINATE_BY,
+        "messages": page.object_list,
+    }
+    return render_to_response("logger/channel_detail.html", 
+        context, context_instance=RequestContext(request))
+
+def channel_detail(request, channel_name):
+    channel = get_object_or_404(Channel, name="#%s" % channel_name)
+    paginator = QuerySetPaginator(channel.message_set.all(), settings.PAGINATE_BY)
     try:
         page_number = int(request.GET.get("page", paginator.num_pages))
     except ValueError:
@@ -35,7 +53,6 @@ def channel_detail(request, channel_name):
     except InvalidPage:
         raise Http404
     context = {
-        "query": query,
         "channel": channel,
         "date": datetime.datetime.today(),
         "page": page,
