@@ -37,7 +37,7 @@
 		<li><a href="#" id="search-link">Search</a>
 			</li>
 		<li id="search" style="display: none;">
-			<form action="">
+			<form action="{% block search_post_url %}{% endblock %}">
 				<input type="text" style="font-size: 0.85em;" size="15" id="search_box" name="q" value="{{ query }}" />
 			</form>
 		</li>

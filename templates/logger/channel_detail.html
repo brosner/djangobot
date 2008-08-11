@@ -2,6 +2,7 @@
 {% load timezone_filters %}
 {% block title %}DjangoBot: {{ channel }} logs{% endblock %}
 {% block heading %}DjangoBot: {{ channel }}{% endblock %}
+{% block search_post_url %}{% url channel_search channel %}{% endblock %}
 {% block content %}
 
     <h1>{{ channel }}</h1>
