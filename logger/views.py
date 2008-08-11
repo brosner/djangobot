@@ -68,11 +68,10 @@ channel_detail = never_cache(channel_detail)
 def channel_detail_day(request, channel_name, year, month, day):
     channel = get_object_or_404(Channel, name="#%s" % channel_name)
     date = datetime.date(*map(int, (year, month, day)))
-    messages = get_messages(channel, request.GET.get("q", ""))
     return render_to_response("logger/channel_detail_day.html", {
         "channel": channel,
         "date": date,
-        "messages": messages.filter(
+        "messages": channel.messages.filter(
             logged__range=(date, date + datetime.timedelta(days=1)),
         ).order_by("logged"),
     }, context_instance=RequestContext(request))
