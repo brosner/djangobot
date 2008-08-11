@@ -43,7 +43,7 @@ def channel_search(request, channel_name):
 
 def channel_detail(request, channel_name):
     channel = get_object_or_404(Channel, name="#%s" % channel_name)
-    paginator = QuerySetPaginator(channel.message_set.all(), settings.PAGINATE_BY)
+    paginator = Paginator(channel.message_set.all(), settings.PAGINATE_BY)
     try:
         page_number = int(request.GET.get("page", paginator.num_pages))
     except ValueError:
