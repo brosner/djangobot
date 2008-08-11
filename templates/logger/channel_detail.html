@@ -1,10 +1,10 @@
 {% extends "base_irc.html" %}
 {% load timezone_filters %}
-{% block title %}DjangoBot: latest 100 | {{ channel }} logs{% endblock %}
+{% block title %}DjangoBot: {{ channel }} logs{% endblock %}
 {% block heading %}DjangoBot: {{ channel }}{% endblock %}
 {% block content %}
 
-    <h1>latest 100 | {{ channel }}</h1>
+    <h1>{{ channel }}</h1>
 
 	{% load colorme %}
 	
