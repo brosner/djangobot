@@ -16,6 +16,10 @@ BOT_LOGGING = False
 
 ROOT_URLCONF = "djangobot.urls"
 
+INTERNAL_IPS = (
+    "127.0.0.1",
+)
+
 MEDIA_URL = "/static/"
 
 TEMPLATE_DIRS = (
@@ -25,22 +29,28 @@ TEMPLATE_DIRS = (
     #
 )
 
+MIDDLEWARE_CLASSES = (
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+#     "django.middleware.http.ConditionalGetMiddleware",
+#     "django.middleware.gzip.GZipMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+)
+
 TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.core.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.media',
-    'logger.context_processors.logger',
+    "django.core.context_processors.auth",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "django.core.context_processors.media",
+    "logger.context_processors.logger",
 )
 
 INSTALLED_APPS = (
-    # "django_evolution",
-    
     "django.contrib.sessions",
     "django.contrib.humanize",
-    
     "timezones",
-    
+    "debug_toolbar",
     "bot",
     "logger",
 )
