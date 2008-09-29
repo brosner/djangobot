@@ -43,8 +43,10 @@
 
 <h2>Top Talkers</h2>
 <ol>
+    {% cache 43200 top_talkers channel %}
     {% for line in channel.top_talkers %}
     <li>{{ line.nickname }}</li>
     {% endfor %}
+    {% endcache %}
 </ol>
 {% endblock %}
