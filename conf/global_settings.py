@@ -51,7 +51,6 @@ INSTALLED_APPS = (
     "django.contrib.humanize",
     "timezones",
     "debug_toolbar",
-    "bot",
     "logger",
 )
 
