@@ -47,7 +47,7 @@ def channel_detail(request, channel_name):
     return channel_detail_day(request, channel_name, today.year, today.month, today.day)
 channel_detail = never_cache(channel_detail)
 
-def channel_detail_day(request, channel_name, year, month, day):
+def channel_detail_day(request, channel_name, year, month, day, page=None):
     channel = get_object_or_404(Channel, name="#%s" % channel_name)
     ctx = {}
     date = datetime.date(*map(int, (year, month, day)))
@@ -57,10 +57,13 @@ def channel_detail_day(request, channel_name, year, month, day):
     paginator = Paginator(channel.message_set.filter(
         logged__range=(date, date + datetime.timedelta(days=1)),
     ).order_by("logged"), settings.PAGINATE_BY)
-    try:
-        page_number = int(request.GET.get("page", paginator.num_pages))
-    except ValueError:
-        return HttpResponseBadRequest()
+    if page is None:
+        page_number = paginator.num_pages
+    else:
+        try:
+            page_number = int(page)
+        except ValueError:
+            return HttpResponseBadRequest()
     try:
         page = paginator.page(page_number)
     except InvalidPage:
