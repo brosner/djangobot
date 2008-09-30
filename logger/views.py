@@ -72,5 +72,6 @@ def channel_detail_day(request, channel_name, year, month, day):
         "paginator": paginator,
         "is_paginated": paginator.count >= settings.PAGINATE_BY,
         "page_number": page_number,
+        "page": page,
         "messages": page.object_list,
     }), context_instance=RequestContext(request))
