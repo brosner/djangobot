@@ -1,3 +1,4 @@
+{% load colorme %}
 {% for message in messages %}
 <tr valign="top">
     <td><a href="{% url channel_detail_day_page channel.clean_name,date.year,date.month,date.day,page_number %}#{{ message.logged|date:"H:i" }}-{{ message.id }}" id="{{ message.logged|date:"H:i" }}-{{ message.id }}">{{ message.logged|date:"H:i" }}</a></td>
