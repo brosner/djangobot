@@ -37,7 +37,7 @@ class Message(models.Model):
     nickname = models.CharField(max_length=19, db_index=True)
     text = models.TextField()
     is_action = models.BooleanField(default=False)
-    logged = models.DateTimeField(default=datetime.now)
+    logged = models.DateTimeField(default=datetime.now, db_index=True)
     is_blocked = models.BooleanField(default=False)
     
     objects = MessageManager()
