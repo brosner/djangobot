@@ -10,8 +10,8 @@
 	{% load colorme %}
 	
     <table>
-        {% if messages %}
-        {% cache 43200 messages channel date %}
+        {% if not today %}
+        {% cache 43200 messages channel date page_number %}
         {% for message in messages %}
         <tr valign="top">
             <td><a href="#">{{ message.logged|date:"H:i" }}</a></td>
@@ -26,9 +26,21 @@
         {% endcache %}
         {% endif %}
     </table>
+    {% if is_paginated %}
+        {% include "logger/paginator.html" %}
+    {% endif %}
 {% endblock %}
 
 {% block sidebar %}
 {% load cal %}
 {% display_calendar for date in channel %}
+
+<h2>Top Talkers</h2>
+<ol>
+    {% cache 43200 top_talkers channel %}
+    {% for line in channel.top_talkers %}
+    <li>{{ line.nickname }}</li>
+    {% endfor %}
+    {% endcache %}
+</ol>
 {% endblock %}
