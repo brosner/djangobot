@@ -43,8 +43,16 @@ def channel_search(request, channel_name):
         context, context_instance=RequestContext(request))
 
 def channel_detail(request, channel_name):
-    today = datetime.date.today()
-    return channel_detail_day(request, channel_name, today.year, today.month, today.day)
+    """
+    Latest 100 messages of the channel.
+    """
+    channel = get_object_or_404(Channel, name="#%s" % channel_name)
+    return render_to_response("logger/channel_detail.html", {
+        "channel": channel,
+        "channel_name": channel_name,
+        "date": datetime.date.today(), # @@@: bad assumption, fixme later.
+        "messages": reversed(channel.message_set.order_by("-logged")[:100]),
+    }, context_instance=RequestContext(request))
 channel_detail = never_cache(channel_detail)
 
 def channel_detail_day(request, channel_name, year, month, day, page=None):
