@@ -7,28 +7,31 @@
     <h2>{{ date|date:"Y-n-j" }}</h2>
 
 	{% load cache %}
-	{% load colorme %}
 	
     <table>
-        {% if messages %}
-        {% cache 43200 messages channel date %}
-        {% for message in messages %}
-        <tr valign="top">
-            <td><a href="#">{{ message.logged|date:"H:i" }}</a></td>
-            {% if message.is_action %}
-            <td colspan="2">{{ message.nickname }} {{ message.text|urlizetrunc:"50" }}</td>
-            {% else %}
-            <td align="right" style="color: {{ message.nickname|colorize }};"><strong>{{ message.nickname }}</strong></td>
-            <td><div style="overflow:auto;">{{ message.text|urlizetrunc:"50" }}</div></td>
-            {% endif %}
-        </tr>
-        {% endfor %}
+        {% if today %}
+        {% include "logger/inner_messages.html" %}
+        {% else %}
+        {% cache 43200 messages channel date page_number %}
+        {% include "logger/inner_messages.html" %}
         {% endcache %}
         {% endif %}
     </table>
+    {% if is_paginated %}
+        {% include "logger/paginator.html" %}
+    {% endif %}
 {% endblock %}
 
 {% block sidebar %}
 {% load cal %}
 {% display_calendar for date in channel %}
+
+<h2>Top Talkers</h2>
+<ol>
+    {% cache 43200 top_talkers channel %}
+    {% for line in channel.top_talkers %}
+    <li>{{ line.nickname }}</li>
+    {% endfor %}
+    {% endcache %}
+</ol>
 {% endblock %}

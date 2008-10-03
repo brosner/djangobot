@@ -1,4 +1,5 @@
 {% extends "base_irc.html" %}
+{% load cache %}
 {% load timezone_filters %}
 {% block title %}DjangoBot: {{ channel }} logs{% endblock %}
 {% block heading %}DjangoBot: {{ channel }}{% endblock %}
@@ -32,9 +33,6 @@
         </tr>
         {% endfor %}
     </table>
-    {% if is_paginated %}
-        {% include "logger/paginator.html" %}
-    {% endif %}
 {% endblock %}
 
 {% block sidebar %}
@@ -43,8 +41,10 @@
 
 <h2>Top Talkers</h2>
 <ol>
+    {% cache 43200 top_talkers channel %}
     {% for line in channel.top_talkers %}
     <li>{{ line.nickname }}</li>
     {% endfor %}
+    {% endcache %}
 </ol>
 {% endblock %}

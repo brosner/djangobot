@@ -43,38 +43,46 @@ def channel_search(request, channel_name):
         context, context_instance=RequestContext(request))
 
 def channel_detail(request, channel_name):
+    """
+    Latest 100 messages of the channel.
+    """
     channel = get_object_or_404(Channel, name="#%s" % channel_name)
-    paginator = Paginator(channel.message_set.all(), settings.PAGINATE_BY)
-    try:
-        page_number = int(request.GET.get("page", paginator.num_pages))
-    except ValueError:
-        return HttpResponseBadRequest()
+    return render_to_response("logger/channel_detail.html", {
+        "channel": channel,
+        "channel_name": channel_name,
+        "date": datetime.date.today(), # @@@: bad assumption, fixme later.
+        "messages": reversed(channel.message_set.order_by("-logged")[:100]),
+    }, context_instance=RequestContext(request))
+channel_detail = never_cache(channel_detail)
+
+def channel_detail_day(request, channel_name, year, month, day, page=None):
+    channel = get_object_or_404(Channel, name="#%s" % channel_name)
+    ctx = {}
+    date = datetime.date(*map(int, (year, month, day)))
+    # check if the date is today, if True then dont allow caching.
+    if date == datetime.date.today():
+        ctx.update({"today": True})
+    paginator = Paginator(channel.message_set.filter(
+        logged__range=(date, date + datetime.timedelta(days=1)),
+    ).order_by("logged"), settings.PAGINATE_BY)
+    if page is None:
+        page_number = paginator.num_pages
+    else:
+        try:
+            page_number = int(page)
+        except ValueError:
+            return HttpResponseBadRequest()
     try:
         page = paginator.page(page_number)
     except InvalidPage:
         raise Http404
-    context = {
-        "channel": channel,
-        "channel_name": channel_name, # used for {% url %}
-        "date": datetime.datetime.today(),
-        "page": page,
-        "page_range": smart_page_range(paginator),
-        "paginator": paginator,
-        "is_paginated": paginator.count >= settings.PAGINATE_BY,
-        "messages": page.object_list,
-    }
-    return render_to_response("logger/channel_detail.html", 
-        context, context_instance=RequestContext(request))
-channel_detail = never_cache(channel_detail)
-
-def channel_detail_day(request, channel_name, year, month, day):
-    channel = get_object_or_404(Channel, name="#%s" % channel_name)
-    date = datetime.date(*map(int, (year, month, day)))
-    return render_to_response("logger/channel_detail_day.html", {
+    return render_to_response("logger/channel_detail_day.html", dict(ctx, **{
         "channel": channel,
         "channel_name": channel_name, # used for {% url %}
         "date": date,
-        "messages": channel.message_set.filter(
-            logged__range=(date, date + datetime.timedelta(days=1)),
-        ).order_by("logged"),
-    }, context_instance=RequestContext(request))
+        "paginator": paginator,
+        "is_paginated": paginator.count >= settings.PAGINATE_BY,
+        "page_number": page_number,
+        "page": page,
+        "messages": page.object_list,
+    }), context_instance=RequestContext(request))

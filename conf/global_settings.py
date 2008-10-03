@@ -35,6 +35,7 @@ MIDDLEWARE_CLASSES = (
 #     "django.middleware.http.ConditionalGetMiddleware",
 #     "django.middleware.gzip.GZipMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.middleware.http.SetRemoteAddrFromForwardedFor",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 )
 
@@ -51,7 +52,6 @@ INSTALLED_APPS = (
     "django.contrib.humanize",
     "timezones",
     "debug_toolbar",
-    "bot",
     "logger",
 )
 

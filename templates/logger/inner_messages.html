@@ -1,0 +1,12 @@
+{% load colorme %}
+{% for message in messages %}
+<tr valign="top">
+    <td><a href="{% url channel_detail_day_page channel.clean_name,date.year,date.month,date.day,page_number %}#{{ message.logged|date:"H:i" }}-{{ message.id }}" id="{{ message.logged|date:"H:i" }}-{{ message.id }}">{{ message.logged|date:"H:i" }}</a></td>
+    {% if message.is_action %}
+    <td colspan="2">{{ message.nickname }} {{ message.text|urlizetrunc:"50" }}</td>
+    {% else %}
+    <td align="right" style="color: {{ message.nickname|colorize }};"><strong>{{ message.nickname }}</strong></td>
+    <td><div style="overflow:auto;">{{ message.text|urlizetrunc:"50" }}</div></td>
+    {% endif %}
+</tr>
+{% endfor %}
