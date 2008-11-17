@@ -305,7 +305,7 @@ class DjangoBotProtocol(irc.IRCClient):
     def privmsg(self, user, channel, message, is_action=False):
         if self.factory.channels.all_joined:
             try:
-                c = self.factory.channels[channel.lower()]
+                c = self.factory.channels[channel]
             except KeyError:
                 return
             # TODO: the channel list of users should be prefilled by this point
