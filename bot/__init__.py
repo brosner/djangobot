@@ -73,7 +73,7 @@ class ChannelPool(object):
             yield channel
 
     def __getitem__(self, channel):
-        return self.channels[channel]
+        return self.channels[channel.lower()]
 
     def add(self, channel):
         # perform a quick optimization to speed up lookups
@@ -305,7 +305,7 @@ class DjangoBotProtocol(irc.IRCClient):
     def privmsg(self, user, channel, message, is_action=False):
         if self.factory.channels.all_joined:
             try:
-                c = self.factory.channels[channel]
+                c = self.factory.channels[channel.lower()]
             except KeyError:
                 return
             # TODO: the channel list of users should be prefilled by this point
