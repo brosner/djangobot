@@ -1,8 +1,6 @@
 
 import os
 
-from django.conf.global_settings import *
-
 LOCAL_DEV = False
 PAGINATE_BY = 100
 TIME_ZONE = "UTC"
@@ -56,3 +54,9 @@ INSTALLED_APPS = (
 )
 
 SEARCH_INDEX_NAME = "logger_message"
+
+try:
+    from local_settings import *
+except ImportError:
+    pass
+    
