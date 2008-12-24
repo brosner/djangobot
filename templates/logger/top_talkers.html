@@ -1,0 +1,11 @@
+{% extends "base_irc.html" %}
+
+{% block content %}
+    <h1>Top Talkers</h1>
+    <p>Top talkers in all channels logged.</p>
+    <ul class="graph">
+        {% for line in talkers %}
+        <li><span style="width: {{ line.percentage }}%;">{{ line.nickname }} ({{ line.message_count }})</span></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

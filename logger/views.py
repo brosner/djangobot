@@ -86,3 +86,9 @@ def channel_detail_day(request, channel_name, year, month, day, page=None):
         "page": page,
         "messages": page.object_list,
     }), context_instance=RequestContext(request))
+
+def top_talkers(request):
+    from logger.models import top_talkers
+    return render_to_response("logger/top_talkers.html", {
+        "talkers": top_talkers(),
+    }, context_instance=RequestContext(request))

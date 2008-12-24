@@ -6,6 +6,7 @@ from logger.views import *
 from logger.models import Channel
 
 urlpatterns = patterns("",
+    url(r"^top_talkers/$", top_talkers, name="top_talkers"),
     url(r"^search/(?P<channel_name>[-\w]+)/$", channel_search, name="channel_search"),
     url(r"^(?P<channel_name>[-\w]+)/$", channel_detail, name="channel_detail"),
     url(r"^(?P<channel_name>[-\w]+)/(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})/$", 

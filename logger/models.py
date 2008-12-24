@@ -53,3 +53,16 @@ class Message(models.Model):
     
     def __unicode__(self):
         return u"<%s> %s [%s]" % (self.nickname, self.text, self.logged)
+
+def top_talkers(count=10):
+    """
+    Returns a queryset of the top talkers in all channels.
+    """
+    queryset = Message.objects.all()
+    queryset = queryset.extra(select={
+        "message_count": "COUNT(*)",
+        "percentage": "FLOOR((COUNT(*) / %d.0) * 100)" % Message.objects.count(),
+    }).group_by("nickname").values(
+        "nickname", "message_count", "percentage",
+    ).order_by("-message_count")
+    return queryset[0:count]
