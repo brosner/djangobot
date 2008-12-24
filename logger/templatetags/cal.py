@@ -3,6 +3,7 @@ import calendar
 from calendar import Calendar, month_name, day_abbr
 
 from django import template
+from django.db import connection
 from logger.models import Message
 
 register = template.Library()
@@ -15,7 +16,13 @@ class CalendarNode(template.Node):
     def render(self, context):
         date = self.date.resolve(context)
         channel = self.channel.resolve(context)
-        message_list = Message.objects.filter(logged__year=date.year, logged__month=date.month, channel=channel).dates('logged', 'day')
+        cursor = connection.cursor()
+        cursor.execute("SET TIME ZONE %s", [context["user_timezone"]])
+        message_list = Message.objects.filter(
+            logged__year=date.year, logged__month=date.month,
+            channel=channel,
+        ).dates("logged", "day")
+        print str(message_list.query)
         c = HTMLFormatCalendar(message_list, channel)
         return c.formatmonth(date.year, date.month)
 
