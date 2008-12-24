@@ -22,7 +22,6 @@ class CalendarNode(template.Node):
             logged__year=date.year, logged__month=date.month,
             channel=channel,
         ).dates("logged", "day")
-        print str(message_list.query)
         c = HTMLFormatCalendar(message_list, channel)
         return c.formatmonth(date.year, date.month)
 
