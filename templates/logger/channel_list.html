@@ -1,10 +1,16 @@
 {% extends "base_irc.html" %}
-{% block title %}DjangoBot: Channels{% endblock %}
-{% block heading %}DjangoBot Channels{% endblock %}
-{% block search_post_url %}#{% endblock %}
-{% block content %}
-<h1>Channels</h1>
-{% for channel in object_list %}
-<a href="{{ channel.get_absolute_url }}">{{ channel }}</a><br />
-{% endfor %}
+
+{% load i18n %}
+
+{% block title %}Channels | {{ block.super }}{% endblock %}
+
+{% block body %}
+    <h1>{% trans "Channels" %}</h1>
+    {% if object_list %}
+    <ul>
+        {% for channel in object_list %}
+        <li><a href="{{ channel.get_absolute_url }}">{{ channel.name }}</a></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 {% endblock %}

@@ -21,8 +21,11 @@ class ChannelManager(models.Manager):
         """
         queryset = channel.message_set.all()
         queryset = queryset.extra(select={
-            "message_count": "COUNT(*)"
-        }).group_by("nickname").values("nickname", "message_count").order_by("-message_count")
+            "message_count": "COUNT(*)",
+            "percentage": "FLOOR((COUNT(*) / %d.0) * 100)" % channel.message_set.count(),
+        }).group_by("nickname").values(
+            "nickname", "message_count", "percentage",
+        ).order_by("-message_count")
         return queryset[0:count]
 
 class MessageManager(models.Manager):

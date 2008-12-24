@@ -32,7 +32,7 @@ MIDDLEWARE_CLASSES = (
 #     "django.middleware.gzip.GZipMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.http.SetRemoteAddrFromForwardedFor",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    #"debug_toolbar.middleware.DebugToolbarMiddleware",
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -47,7 +47,7 @@ INSTALLED_APPS = (
     "django.contrib.sessions",
     "django.contrib.humanize",
     "timezones",
-    "debug_toolbar",
+    #"debug_toolbar",
     "logger",
 )
 
