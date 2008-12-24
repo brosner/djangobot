@@ -18,13 +18,11 @@ INTERNAL_IPS = (
     "127.0.0.1",
 )
 
+MEDIA_ROOT = os.path.join(os.path.dirname(__file__), "static")
 MEDIA_URL = "/static/"
 
 TEMPLATE_DIRS = (
-    #
-    # IMPORT NOTE:
-    # you need to specify this in your own settings.py.
-    #
+    os.path.join(os.path.dirname(__file__), "templates"),
 )
 
 MIDDLEWARE_CLASSES = (
@@ -59,4 +57,3 @@ try:
     from local_settings import *
 except ImportError:
     pass
-    
