@@ -1,9 +1,12 @@
+
 import datetime
 import calendar
+
 from calendar import Calendar, month_name, day_abbr
 
 from django import template
 from django.db import connection
+
 from logger.models import Message
 
 register = template.Library()
@@ -40,13 +43,13 @@ def do_calendar(parser, token):
     bits = token.contents.split()
     if len(bits) != 5:
         raise template.TemplateSyntaxError("'%s' tag takes five arguments" % bits[0])
-    if bits [1] != 'for':
+    if bits [1] != "for":
         raise template.TemplateSyntaxError("second argument to '%s' tag must be 'for'" % bits[0])
-    if bits [3] != 'in':
+    if bits [3] != "in":
         raise template.TemplateSyntaxError("fourth argument to '%s' tag must be 'in'" % bits[0])
     return CalendarNode(bits[2], bits[4])
     
-register.tag('display_calendar', do_calendar)
+register.tag("display_calendar", do_calendar)
 
 class HTMLFormatCalendar(Calendar):
     """
@@ -54,13 +57,14 @@ class HTMLFormatCalendar(Calendar):
     """
 
     # CSS classes for the day <td>s
-    cssclasses = {'table_class': 'calendar',
-                  'month_name_class': 'monthName',
-                  'other_month_class': 'otherMonth',
-                  'day_name_class': 'dayName',
-                  'day_class': 'day',
-                  'today_class': 'specialDay'
-                 }
+    cssclasses = {
+        "table_class": "calendar",
+        "month_name_class": "monthName",
+        "other_month_class": "otherMonth",
+        "day_name_class": "dayName",
+        "day_class": "day",
+        "today_class": "specialDay",
+    }
     
     def __init__(self, event_list, channel):
         self.event_list = event_list
@@ -72,36 +76,45 @@ class HTMLFormatCalendar(Calendar):
         Return a day as a table cell.
         """
         if day == 0:
-            return '<td class="%s">&nbsp;</td>' % (self.cssclasses['other_month_class'],) # day outside month
+            return '<td class="%s">&nbsp;</td>' % (
+                self.cssclasses['other_month_class'], # day outside month
+            )
         else:
-            class_style = self.cssclasses['day_class']
+            class_style = self.cssclasses["day_class"]
             if day == datetime.datetime.today().day:
-                class_style = self.cssclasses['today_class']
+                class_style = self.cssclasses["today_class"]
             
             for e in self.event_list:
                 if e.day == day:
-                    return '<td class="%s"><a href="%s%s/">%d</a></td>' % (class_style, self.channel.get_absolute_url(), e.strftime("%Y/%m/%d"), day,)
+                    return '<td class="%s"><a href="%s%s/">%d</a></td>' % (
+                        class_style,
+                        self.channel.get_absolute_url(),
+                        e.strftime("%Y/%m/%d"),
+                        day,
+                    )
             return '<td class="%s">%d</td>' % (class_style, day)
 
     def formatweek(self, theweek):
         """
         Return a complete week as a table row.
         """
-        s = ''.join(self.formatday(d, wd) for (d, wd) in theweek)
-        return '<tr>%s</tr>' % s
+        s = "".join(self.formatday(d, wd) for (d, wd) in theweek)
+        return "<tr>%s</tr>" % s
 
     def formatweekday(self, day):
         """
         Return a weekday name as a table header.
         """
-        return '<th>%s</th>' % (day_abbr[day],)
+        return "<th>%s</th>" % day_abbr[day]
 
     def formatweekheader(self):
         """
         Return a header for a week as a table row.
         """
-        s = ''.join(self.formatweekday(i) for i in self.iterweekdays())
-        return '<tr class="%s">%s</tr>' % (self.cssclasses['day_name_class'], s,)
+        s = "".join(self.formatweekday(i) for i in self.iterweekdays())
+        return '<tr class="%s">%s</tr>' % (
+            self.cssclasses["day_name_class"], s
+        )
 
     def formatmonthname(self, theyear, themonth, withyear=True):
         """
@@ -111,7 +124,9 @@ class HTMLFormatCalendar(Calendar):
             s = '%s %s' % (month_name[themonth], theyear)
         else:
             s = '%s' % month_name[themonth]
-        return '<tr class="%s"><th colspan="7">%s</th></tr>' % (self.cssclasses['month_name_class'], s)
+        return '<tr class="%s"><th colspan="7">%s</th></tr>' % (
+            self.cssclasses['month_name_class'], s
+        )
 
     def formatmonth(self, theyear, themonth, withyear=True):
         """
@@ -120,17 +135,17 @@ class HTMLFormatCalendar(Calendar):
         v = []
         a = v.append
         a('<table border="0" cellpadding="0" cellspacing="0" class="%s">' % (self.cssclasses['table_class']))
-        a('\n')
+        a("\n")
         a(self.formatmonthname(theyear, themonth, withyear=withyear))
-        a('\n')
+        a("\n")
         a(self.formatweekheader())
-        a('\n')
+        a("\n")
         for week in self.monthdays2calendar(theyear, themonth):
             a(self.formatweek(week))
-            a('\n')
+            a("\n")
         a('</table>')
-        a('\n')
-        return ''.join(v)
+        a("\n")
+        return "".join(v)
 
     def formatyear(self, theyear, width=3):
         """
