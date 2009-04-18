@@ -18,6 +18,9 @@ def smart_page_range(paginator):
     return page_range
 
 def channel_search(request, channel_name):
+    # lets face the truth.
+    return HttpResponse("Search is broken. It has never worked correctly. I have some ideas to fix it. It starts with django-haystack (http://github.com/toastdriven/django-haystack/tree/master).")
+    
     channel = get_object_or_404(Channel, name="#%s" % channel_name)
     query = request.GET.get("q", "")
     paginator = Paginator(Message.search.query(query).filter(channel_id=channel.pk).order_by("logged"), settings.PAGINATE_BY)
