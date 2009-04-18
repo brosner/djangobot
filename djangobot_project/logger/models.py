@@ -4,8 +4,6 @@ from datetime import datetime
 from django.db import models
 from django.conf import settings
 
-import djangosphinx
-
 from logger.managers import ChannelManager, MessageManager
 
 class Channel(models.Model):
@@ -41,7 +39,6 @@ class Message(models.Model):
     is_blocked = models.BooleanField(default=False)
     
     objects = MessageManager()
-    search = djangosphinx.SphinxSearch(settings.SEARCH_INDEX_NAME)
     
     class Admin:
         list_display = ("channel", "nickname", "text", "logged")
