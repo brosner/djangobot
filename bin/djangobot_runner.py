@@ -11,8 +11,8 @@ from twisted.internet import protocol, reactor, task
 from twisted.python import log
 
 from django.conf import settings
-from djangobot.bot import DjangoBotService, ChannelPool, Channel
-from djangobot.bot import DjangoPeopleMonitorService
+from djangobot import DjangoBotService, ChannelPool, Channel
+from djangobot import DjangoPeopleMonitorService
 
 application = service.Application("djangobot")
 serv = service.MultiService()
