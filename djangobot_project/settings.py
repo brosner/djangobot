@@ -12,7 +12,7 @@ BOT_PASSWORD = ""
 BOT_CHANNELS = ()
 BOT_LOGGING = False
 
-ROOT_URLCONF = "djangobot.urls"
+ROOT_URLCONF = "djangobot_project.urls"
 
 INTERNAL_IPS = (
     "127.0.0.1",
