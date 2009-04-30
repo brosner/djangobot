@@ -4,7 +4,7 @@ from datetime import datetime
 from django.db import models
 from django.conf import settings
 
-from logger.managers import ChannelManager, MessageManager
+from logger.managers import ChannelManager
 
 class Channel(models.Model):
     name = models.CharField(max_length=50, db_index=True)
@@ -37,8 +37,6 @@ class Message(models.Model):
     is_action = models.BooleanField(default=False)
     logged = models.DateTimeField(default=datetime.now, db_index=True)
     is_blocked = models.BooleanField(default=False)
-    
-    objects = MessageManager()
     
     class Admin:
         list_display = ("channel", "nickname", "text", "logged")

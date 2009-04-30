@@ -1,17 +1,18 @@
 
 from django.db import models
-from django.db.models.query import QuerySet
+from django.db.models.sql.aggregates import Aggregate
 
-class GroupByQuerySet(QuerySet):
-    """
-    A QuerySet that taps into TODO functionality of a QuerySet in
-    queryset-refactor. This is to be used ONLY with the very limited use-case
-    for this logger.
-    """
-    def group_by(self, *fields):
-        obj = self._clone()
-        obj.query.group_by.extend(fields)
-        return obj
+
+class FloorPercentage(Aggregate):
+    sql_function = "FLOOR"
+    sql_template = "%(function)s((COUNT(%(field)s) / %(total_count)d.0) * 100)"
+
+
+class Percentage(models.Aggregate):
+    def add_to_query(self, query, alias, col, source, is_summary):
+        aggregate = FloorPercentage(col, source=source, is_summary=is_summary, **self.extra)
+        query.aggregates[alias] = aggregate
+
 
 class ChannelManager(models.Manager):    
     def top_talkers(self, channel, count=10):
@@ -20,14 +21,11 @@ class ChannelManager(models.Manager):
         top talkers in the given channel.
         """
         queryset = channel.message_set.all()
-        queryset = queryset.extra(select={
-            "message_count": "COUNT(*)",
-            "percentage": "FLOOR((COUNT(*) / %d.0) * 100)" % channel.message_set.count(),
-        }).group_by("nickname").values(
-            "nickname", "message_count", "percentage",
+        queryset = queryset.values(
+           "nickname",
+        ).annotate(
+           message_count = models.Count("id"),
+           percentage = Percentage("id", total_count=channel.message_set.count()),
         ).order_by("-message_count")
         return queryset[0:count]
-
-class MessageManager(models.Manager):
-    def get_query_set(self):
-        return GroupByQuerySet(self.model)
+        
