@@ -23,8 +23,8 @@ class Channel(models.Model):
     def clean_name(self):
         return self.name[0] == "#" and self.name[1:] or self.name
     
-    def top_talkers(self, count=10):
-        return Channel.objects.top_talkers(self, count)
+    def top_talkers(self, **kwargs):
+        return Channel.objects.top_talkers(self, **kwargs)
     
     def get_absolute_url(self):
         return ("channel_detail", (), {"channel_name": self.clean_name()})
@@ -48,16 +48,3 @@ class Message(models.Model):
     
     def __unicode__(self):
         return u"<%s> %s [%s]" % (self.nickname, self.text, self.logged)
-
-def top_talkers(count=10):
-    """
-    Returns a queryset of the top talkers in all channels.
-    """
-    queryset = Message.objects.all()
-    queryset = queryset.extra(select={
-        "message_count": "COUNT(*)",
-        "percentage": "FLOOR((COUNT(*) / %d.0) * 100)" % Message.objects.count(),
-    }).group_by("nickname").values(
-        "nickname", "message_count", "percentage",
-    ).order_by("-message_count")
-    return queryset[0:count]
