@@ -14,9 +14,6 @@ class Channel(models.Model):
     class Meta:
         db_table = "irc_channel" # for backward compatibility
     
-    class Admin:
-        pass
-    
     def __unicode__(self):
         return self.name
     
@@ -37,10 +34,6 @@ class Message(models.Model):
     is_action = models.BooleanField(default=False)
     logged = models.DateTimeField(default=datetime.now, db_index=True)
     is_blocked = models.BooleanField(default=False)
-    
-    class Admin:
-        list_display = ("channel", "nickname", "text", "logged")
-        list_filter = ("channel", "logged")
     
     class Meta:
         db_table = "irc_message" # for backward compatibility
