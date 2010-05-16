@@ -39,3 +39,6 @@ if settings.BOT_DJANGOPEOPLE:
     DjangoPeopleMonitorService().setServiceParent(serv)
 
 serv.setServiceParent(application)
+
+import setproctitle
+setproctitle.setproctitle("bot runner [%s]" % nickname)
