@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+import os
+import sys
+
+# unfornately we have to do this
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "djangobot_project"))
 
 from django.core.management import setup_environ
 import settings as settings_mod
