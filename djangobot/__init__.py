@@ -310,17 +310,18 @@ class DjangoBotProtocol(irc.IRCClient):
                 return
             # TODO: the channel list of users should be prefilled by this point
             # so it is a quick lookup.
-            nickname = user.split("!", 1)[0]
-            try:
-                u = c.users[nickname]
-            except KeyError:
-                u = User(nickname)
-                c.add_user(u)
-            msg = Message(u, c, message, is_action=is_action)
-            if channel.lower() == self.nickname.lower():
-                msg.parse_as_command()
-            else:
-                msg.parse_as_normal()
+            if "!" in user:
+                nickname = user.split("!", 1)[0]
+                try:
+                    u = c.users[nickname]
+                except KeyError:
+                    u = User(nickname)
+                    c.add_user(u)
+                msg = Message(u, c, message, is_action=is_action)
+                if channel.lower() == self.nickname.lower():
+                    msg.parse_as_command()
+                else:
+                    msg.parse_as_normal()
 
     def action(self, user, channel, message):
         self.privmsg(user, channel, message, is_action=True)
