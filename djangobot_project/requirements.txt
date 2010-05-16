@@ -1,0 +1,9 @@
+--extra-index-url=http://dist.pinaxproject.com/dev/
+
+Django==1.2.dev13117
+django-timezones==0.2.dev1
+django-debug-toolbar==0.8.3
+pytz==2010h
+gunicorn==0.8.1
+setproctitle==1.0
+psycopg2 # ==2.2.0 -- fails since setup.py says 2.2.0, but should be 2.2.0rc1
