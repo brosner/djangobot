@@ -45,8 +45,11 @@ TEMPLATE_CONTEXT_PROCESSORS = [
 INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.humanize",
+    
     "timezones",
     "debug_toolbar",
+    "gunicorn",
+    
     "logger",
 ]
 
