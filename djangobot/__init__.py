@@ -158,18 +158,19 @@ class Message(object):
     def parse_as_normal(self):
         self.log()
         activity_set.add(self.user)
-        if self.message.lower().startswith(
-           self.channel.nickname.lower() + ":"):
-            self.channel.msg("%s: i am a bot. brosner is my creator. " \
-                "http://code.djangoproject.com/wiki/DjangoBot" % \
-                self.user.nickname)
-        # find any referenced tickets in this message
-        # this requires the syntax #1000 to trigger.
-        tickets = re.findall(r"(?:^|[\s(])#(\d+)\b", self.message)
-        self.cmd_ticket(*tickets, **dict(in_channel=True))
-        # find changesets. requires r1000 syntax.
-        changesets = re.findall(r"\br(\d+)\b", self.message)
-        self.cmd_changeset(*changesets, **dict(in_channel=True))
+        if self.user.nickname not in settings.NOOP_USERS:
+            if self.message.lower().startswith(
+               self.channel.nickname.lower() + ":"):
+                self.channel.msg("%s: i am a bot. brosner is my creator. " \
+                    "http://code.djangoproject.com/wiki/DjangoBot" % \
+                    self.user.nickname)
+            # find any referenced tickets in this message
+            # this requires the syntax #1000 to trigger.
+            tickets = re.findall(r"(?:^|[\s(])#(\d+)\b", self.message)
+            self.cmd_ticket(*tickets, **dict(in_channel=True))
+            # find changesets. requires r1000 syntax.
+            changesets = re.findall(r"\br(\d+)\b", self.message)
+            self.cmd_changeset(*changesets, **dict(in_channel=True))
 
     def check_url(self, url):
         try:
