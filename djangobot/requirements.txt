@@ -2,7 +2,7 @@
 
 Django==1.2.dev13117
 Twisted==8.2.0
-feedparser==4.1
+feedparser==5.1.2
 psycopg2 # ==2.2.0 -- fails since setup.py says 2.2.0, but should be 2.2.0rc1
 setproctitle==1.0
 
